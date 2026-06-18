@@ -12,6 +12,7 @@ Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->update(
 Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->destroy((int)$id), 'DELETE');
 
 // Orders
+Route::add('/api/orders/export',      fn() => (new OrderController())->export(), 'GET');
 Route::add('/api/orders',             fn() => (new OrderController())->index(),  'GET');
 Route::add('/api/orders/([0-9]+)',     fn($id) => (new OrderController())->show((int)$id),   'GET');
 Route::add('/api/orders',             fn() => (new OrderController())->store(),  'POST');

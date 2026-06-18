@@ -4,6 +4,7 @@ namespace GTA\Controllers;
 use GTA\Models\UserModel;
 use GTA\Middleware\AuthMiddleware;
 use GTA\Helpers\ResponseHelper;
+use GTA\Helpers\MailHelper;
 
 class AuthController
 {
@@ -54,6 +55,8 @@ class AuthController
         $id   = $this->users->create($name, $email, $hash);
         $user = $this->users->findById($id);
         $token = AuthMiddleware::generateToken($user);
+
+        MailHelper::sendWelcome($email, $name);
 
         ResponseHelper::json([
             'token' => $token,

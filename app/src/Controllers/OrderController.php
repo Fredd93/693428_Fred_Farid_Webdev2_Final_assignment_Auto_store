@@ -4,6 +4,7 @@ namespace GTA\Controllers;
 use GTA\Models\OrderModel;
 use GTA\Middleware\AuthMiddleware;
 use GTA\Helpers\ResponseHelper;
+use GTA\Helpers\MailHelper;
 
 class OrderController
 {
@@ -51,7 +52,43 @@ class OrderController
 
         $id    = $this->orders->create($data);
         $order = $this->orders->findById($id);
+
+        MailHelper::sendOrderConfirmation(
+            $order['client_email'] ?? '',
+            $order['client_name']  ?? '',
+            $order
+        );
+
         ResponseHelper::json($order, 201);
+    }
+
+    public function export(): void
+    {
+        AuthMiddleware::require('admin');
+
+        $rows = $this->orders->exportAll();
+
+        header('Content-Type: text/csv; charset=UTF-8');
+        header('Content-Disposition: attachment; filename="orders_' . date('Y-m-d') . '.csv"');
+        header('Cache-Control: no-cache');
+
+        $out = fopen('php://output', 'w');
+        fputcsv($out, ['Order #', 'Client', 'Email', 'Car', 'Year', 'Price (€)', 'Type', 'Status', 'Date'], ',', '"', '\\');
+        foreach ($rows as $row) {
+            fputcsv($out, [
+                $row['id'],
+                $row['client_name'],
+                $row['client_email'],
+                $row['brand'] . ' ' . $row['model'],
+                $row['year'],
+                number_format($row['price'], 2, '.', ''),
+                $row['order_type'],
+                $row['status'],
+                date('Y-m-d', strtotime($row['created_at'])),
+            ], ',', '"', '\\');
+        }
+        fclose($out);
+        exit;
     }
 
     public function update(int $id): void
@@ -66,6 +103,14 @@ class OrderController
         if (!in_array($status, $allowed)) ResponseHelper::error('Invalid status', 400);
 
         $this->orders->updateStatus($id, $status);
-        ResponseHelper::json($this->orders->findById($id));
+        $updated = $this->orders->findById($id);
+
+        MailHelper::sendOrderStatusUpdate(
+            $updated['client_email'] ?? '',
+            $updated['client_name']  ?? '',
+            $updated
+        );
+
+        ResponseHelper::json($updated);
     }
 }

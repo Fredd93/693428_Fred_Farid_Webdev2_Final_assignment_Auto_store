@@ -82,4 +82,47 @@ CREATE TABLE car_images (
   CONSTRAINT fk_car_images_car FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- -------------------------------------------------------
+-- SEED: Extra cars (Honda Civic 2003, Toyota Corolla 2002, Mitsubishi ASX 2020)
+-- -------------------------------------------------------
+INSERT INTO cars (brand, model, year, transmission, engine_spec, car_condition, description, image_path, color, price, lease_available, lease_terms, on_sale, discount, status) VALUES
+(
+  'Honda', 'Civic', 2003, 'Manual',
+  '1.6L 4-cylinder 110hp',
+  'Used',
+  'A reliable and fuel-efficient compact that defined a generation. The 2003 Civic offers excellent build quality, low running costs, and easy maintenance — a perfect first car or daily driver.',
+  'assets/images/Honda_civic_2003_front.jpeg',
+  'Silver', 4500.00, 0, '', 0, 0.00, 'available'
+),
+(
+  'Toyota', 'Corolla', 2002, 'Manual',
+  '1.4L 4-cylinder 97hp',
+  'Used',
+  'One of the most reliable cars ever made. This 2002 Corolla has stood the test of time with minimal repairs, great fuel economy, and a comfortable ride for everyday use.',
+  'assets/images/Toyota_corolla_2002_front.jpg',
+  'Blue', 3800.00, 0, '', 0, 0.00, 'available'
+),
+(
+  'Mitsubishi', 'ASX', 2020, 'Automatic',
+  '2.0L 4-cylinder 150hp',
+  'Used',
+  'A stylish and practical compact SUV with modern safety features, spacious interior, and a smooth automatic gearbox. Great for city driving and weekend getaways.',
+  'assets/images/Mitsubishi-ASX-2020-front.jpg',
+  'Red', 18500.00, 1, '48 months, €320/month, 10% down', 0, 0.00, 'available'
+);
+
+INSERT INTO car_images (car_id, image_path, sort_order)
+SELECT c.id, v.image_path, v.sort_order FROM cars c
+JOIN (
+  SELECT 'Honda'      AS brand, 'Civic'   AS model, 'assets/images/Honda_civic_2003_front.jpeg'     AS image_path, 0 AS sort_order UNION ALL
+  SELECT 'Honda',               'Civic',              'assets/images/Honda_civic_2003_back.jpg',         1 UNION ALL
+  SELECT 'Honda',               'Civic',              'assets/images/Hona_Civic_2003_interior.png',      2 UNION ALL
+  SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_front.jpg',    0 UNION ALL
+  SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_back.jpg',     1 UNION ALL
+  SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_interior.jpg', 2 UNION ALL
+  SELECT 'Mitsubishi',          'ASX',                 'assets/images/Mitsubishi-ASX-2020-front.jpg',    0 UNION ALL
+  SELECT 'Mitsubishi',          'ASX',                 'assets/images/Mitsubishi-ASX-2020-back.jpg',     1 UNION ALL
+  SELECT 'Mitsubishi',          'ASX',                 'assets/images/Mitsubishi-ASX-2020-interior.jpg', 2
+) v ON c.brand = v.brand AND c.model = v.model AND c.year IN (2003, 2002, 2020);
+
 SET FOREIGN_KEY_CHECKS = 1;

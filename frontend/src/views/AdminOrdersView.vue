@@ -1,6 +1,12 @@
 <template>
   <div class="max-w-7xl mx-auto px-6 py-10">
-    <h1 class="text-2xl font-bold text-white mb-6">All Orders</h1>
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl font-bold text-white">All Orders</h1>
+      <button @click="exportCsv"
+        class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
+        Export CSV
+      </button>
+    </div>
 
     <div v-if="loading" class="text-gray-400">Loading...</div>
     <table v-else class="w-full text-sm text-left text-gray-300">
@@ -60,6 +66,16 @@ async function load(page = 1) {
 async function updateStatus(id, status) {
   await client.put(`/orders/${id}`, { status })
   await load()
+}
+
+async function exportCsv() {
+  const { data } = await client.get('/orders/export', { responseType: 'blob' })
+  const url  = URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
+  const link = document.createElement('a')
+  link.href  = url
+  link.download = `orders_${new Date().toISOString().slice(0, 10)}.csv`
+  link.click()
+  URL.revokeObjectURL(url)
 }
 
 onMounted(() => load())
