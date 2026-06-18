@@ -35,15 +35,44 @@ class CarModel extends BaseModel
             $params[':on_sale'] = $filters['on_sale'];
         }
 
-        $sql = 'SELECT * FROM cars WHERE ' . implode(' AND ', $where) . ' ORDER BY id DESC';
-        return $this->paginate($sql, $params, $page, $limit);
+        $sql = 'SELECT c.*, COALESCE(
+                    (SELECT ci.image_path FROM car_images ci WHERE ci.car_id = c.id ORDER BY ci.sort_order LIMIT 1),
+                    c.image_path
+                ) AS thumbnail
+                FROM cars c WHERE ' . implode(' AND ', $where) . ' ORDER BY c.id DESC';
+        $result = $this->paginate($sql, $params, $page, $limit);
+        return $result;
     }
 
     public function findById(int $id): ?array
     {
         $stmt = $this->db->prepare('SELECT * FROM cars WHERE id = :id');
         $stmt->execute([':id' => $id]);
-        return $stmt->fetch() ?: null;
+        $car = $stmt->fetch();
+        if (!$car) return null;
+        $car['images'] = $this->getImages($id);
+        return $car;
+    }
+
+    public function getImages(int $carId): array
+    {
+        $stmt = $this->db->prepare(
+            'SELECT image_path FROM car_images WHERE car_id = :car_id ORDER BY sort_order ASC'
+        );
+        $stmt->execute([':car_id' => $carId]);
+        return $stmt->fetchAll(PDO::FETCH_COLUMN);
+    }
+
+    public function syncImages(int $carId, array $paths): void
+    {
+        $this->db->prepare('DELETE FROM car_images WHERE car_id = :car_id')
+                 ->execute([':car_id' => $carId]);
+        $stmt = $this->db->prepare(
+            'INSERT INTO car_images (car_id, image_path, sort_order) VALUES (:car_id, :path, :order)'
+        );
+        foreach ($paths as $i => $path) {
+            $stmt->execute([':car_id' => $carId, ':path' => $path, ':order' => $i]);
+        }
     }
 
     public function create(array $data): int

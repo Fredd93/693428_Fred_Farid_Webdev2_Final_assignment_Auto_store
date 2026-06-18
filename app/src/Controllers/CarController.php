@@ -38,6 +38,25 @@ class CarController
         $car ? ResponseHelper::json($car) : ResponseHelper::error('Car not found', 404);
     }
 
+    private function saveUploadedFiles(array $filesInput): array
+    {
+        $paths = [];
+        $dir   = __DIR__ . '/../../public/assets/images/';
+        $names = (array) $filesInput['name'];
+        $tmps  = (array) $filesInput['tmp_name'];
+        $errs  = (array) $filesInput['error'];
+
+        foreach ($names as $i => $name) {
+            if ($errs[$i] !== UPLOAD_ERR_OK) continue;
+            $clean  = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', basename($name));
+            $unique = uniqid('car_', true) . '_' . $clean;
+            if (move_uploaded_file($tmps[$i], $dir . $unique)) {
+                $paths[] = 'assets/images/' . $unique;
+            }
+        }
+        return $paths;
+    }
+
     public function store(): void
     {
         AuthMiddleware::require('employee');
@@ -46,45 +65,35 @@ class CarController
         foreach ($requiredFields as $field) {
             if (empty($_POST[$field])) ResponseHelper::error("Missing field: $field", 400);
         }
-        // on_sale and discount are numeric — 0 is valid, so check isset not empty
         if (!isset($_POST['on_sale']))  ResponseHelper::error('Missing field: on_sale', 400);
         if (!isset($_POST['discount'])) ResponseHelper::error('Missing field: discount', 400);
 
-        if (!isset($_FILES['image_path']) || $_FILES['image_path']['error'] !== UPLOAD_ERR_OK) {
-            ResponseHelper::error('Image upload failed or missing', 400);
-        }
-
-        $originalName = basename($_FILES['image_path']['name']);
-        $cleanName    = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', $originalName);
-        $uniqueName   = uniqid('car_', true) . '_' . $cleanName;
-        $uploadPath   = __DIR__ . '/../../public/assets/images/' . $uniqueName;
-        $relativePath = 'assets/images/' . $uniqueName;
-
-        if (!move_uploaded_file($_FILES['image_path']['tmp_name'], $uploadPath)) {
-            ResponseHelper::error('Failed to save image', 500);
-        }
+        $fileInput  = $_FILES['images'] ?? null;
+        $imagePaths = $fileInput ? $this->saveUploadedFiles($fileInput) : [];
+        $thumbnail  = $imagePaths[0] ?? '';
 
         $data = [
             ':brand'           => $_POST['brand'],
             ':model'           => $_POST['model'],
             ':year'            => $_POST['year'],
             ':transmission'    => $_POST['transmission'],
-            ':engine_spec'     => $_POST['engine_spec']     ?? '',
-            ':car_condition'   => $_POST['car_condition']   ?? '',
-            ':description'     => $_POST['description']     ?? '',
-            ':color'           => $_POST['color']           ?? '',
+            ':engine_spec'     => $_POST['engine_spec']   ?? '',
+            ':car_condition'   => $_POST['car_condition'] ?? '',
+            ':description'     => $_POST['description']   ?? '',
+            ':color'           => $_POST['color']         ?? '',
             ':price'           => $_POST['price'],
-            ':on_sale'         => $_POST['on_sale'],
-            ':discount'        => $_POST['discount'],
-            ':lease_available' => ($_POST['lease_available'] ?? '') === 'yes' ? 1 : 0,
-            ':lease_terms'     => $_POST['lease_terms']     ?? '',
+            ':on_sale'         => (int) $_POST['on_sale'],
+            ':discount'        => (float) $_POST['discount'],
+            ':lease_available' => (int) ($_POST['lease_available'] ?? 0),
+            ':lease_terms'     => $_POST['lease_terms']   ?? '',
             ':status'          => $_POST['status'],
-            ':image_path'      => $relativePath,
+            ':image_path'      => $thumbnail,
         ];
 
-        $id  = $this->cars->create($data);
-        $car = $this->cars->findById($id);
-        ResponseHelper::json($car, 201);
+        $id = $this->cars->create($data);
+        if ($imagePaths) $this->cars->syncImages($id, $imagePaths);
+
+        ResponseHelper::json($this->cars->findById($id), 201);
     }
 
     public function update(int $id): void
@@ -100,13 +109,12 @@ class CarController
                 'description','color','price','on_sale','discount','lease_available','lease_terms','status'
             ]));
 
-            if (isset($_FILES['image_path']) && $_FILES['image_path']['error'] === UPLOAD_ERR_OK) {
-                $originalName = basename($_FILES['image_path']['name']);
-                $cleanName    = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', $originalName);
-                $uniqueName   = uniqid('car_', true) . '_' . $cleanName;
-                $uploadPath   = __DIR__ . '/../../public/assets/images/' . $uniqueName;
-                move_uploaded_file($_FILES['image_path']['tmp_name'], $uploadPath);
-                $data['image_path'] = 'assets/images/' . $uniqueName;
+            if (isset($_FILES['images'])) {
+                $newPaths = $this->saveUploadedFiles($_FILES['images']);
+                if ($newPaths) {
+                    $this->cars->syncImages($id, $newPaths);
+                    $data['image_path'] = $newPaths[0];
+                }
             }
         } else {
             $data = json_decode(file_get_contents('php://input'), true) ?? [];

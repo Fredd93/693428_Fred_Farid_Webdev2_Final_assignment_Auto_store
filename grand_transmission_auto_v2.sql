@@ -68,4 +68,18 @@ CREATE TABLE orders (
   CONSTRAINT fk_orders_car  FOREIGN KEY (car_id)  REFERENCES cars  (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
+-- -------------------------------------------------------
+-- CAR IMAGES: multiple images per car with ordering
+-- -------------------------------------------------------
+DROP TABLE IF EXISTS car_images;
+CREATE TABLE car_images (
+  id         INT(11)      NOT NULL AUTO_INCREMENT,
+  car_id     INT(11)      NOT NULL,
+  image_path VARCHAR(255) NOT NULL,
+  sort_order INT(11)      NOT NULL DEFAULT 0,
+  PRIMARY KEY (id),
+  KEY fk_car_images_car (car_id),
+  CONSTRAINT fk_car_images_car FOREIGN KEY (car_id) REFERENCES cars(id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
 SET FOREIGN_KEY_CHECKS = 1;

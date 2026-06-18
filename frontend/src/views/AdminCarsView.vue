@@ -73,8 +73,9 @@
             <textarea v-model="form.description" rows="2" class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2"></textarea>
           </div>
           <div>
-            <label class="text-gray-400 block mb-1">Image</label>
-            <input type="file" @change="e => form.imageFile = e.target.files[0]" accept="image/*" class="text-gray-300" />
+            <label class="text-gray-400 block mb-1">Images (select multiple)</label>
+            <input type="file" multiple @change="e => form.imageFiles = Array.from(e.target.files)" accept="image/*" class="text-gray-300" />
+            <p v-if="form.imageFiles?.length" class="text-gray-500 text-xs mt-1">{{ form.imageFiles.length }} file(s) selected</p>
           </div>
           <div class="flex gap-3 mt-2">
             <label class="flex items-center gap-2 text-gray-300">
@@ -118,13 +119,13 @@ async function load(page = 1) {
 
 function openAdd() {
   editing.value   = null
-  form.value      = { brand:'', model:'', year:'', transmission:'', price:'', status:'available', description:'', on_sale:false, lease_available:false, discount:0, imageFile:null }
+  form.value      = { brand:'', model:'', year:'', transmission:'', price:'', status:'available', description:'', on_sale:false, lease_available:false, discount:0, imageFiles:[] }
   showModal.value = true
 }
 
 function openEdit(car) {
   editing.value   = car.id
-  form.value      = { ...car, on_sale: !!car.on_sale, lease_available: !!car.lease_available, imageFile: null }
+  form.value      = { ...car, on_sale: !!car.on_sale, lease_available: !!car.lease_available, imageFiles: [] }
   showModal.value = true
 }
 
@@ -138,8 +139,11 @@ async function submitCar() {
   formErr.value = ''
   const fd = new FormData()
   Object.entries(form.value).forEach(([k, v]) => {
-    if (k === 'imageFile') { if (v) fd.append('image_path', v) }
-    else fd.append(k, v === true ? 1 : v === false ? 0 : v)
+    if (k === 'imageFiles') {
+      v.forEach(file => fd.append('images[]', file))
+    } else {
+      fd.append(k, v === true ? 1 : v === false ? 0 : v)
+    }
   })
   try {
     if (editing.value) {

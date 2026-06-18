@@ -4,8 +4,11 @@
     <div v-else-if="!car" class="text-red-400">Car not found.</div>
     <template v-else>
       <div class="grid md:grid-cols-2 gap-10">
-        <img :src="`/${car.image_path}`" :alt="`${car.brand} ${car.model}`"
-          class="w-full rounded-xl object-cover" />
+        <ImageCarousel
+          :images="car.images?.length ? car.images : [car.image_path]"
+          :alt="`${car.brand} ${car.model}`"
+          aspect-ratio="4/3"
+        />
 
         <div>
           <h1 class="text-3xl font-bold text-white mb-2">{{ car.brand }} {{ car.model }}</h1>
@@ -37,6 +40,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth.js'
+import ImageCarousel from '../components/ImageCarousel.vue'
 import client from '../api/client.js'
 
 const route    = useRoute()
