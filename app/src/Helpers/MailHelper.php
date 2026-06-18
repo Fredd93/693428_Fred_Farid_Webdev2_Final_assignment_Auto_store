@@ -132,17 +132,33 @@ class MailHelper
             $mail = self::mailer();
             $mail->addAddress($toEmail, $toName);
             $mail->isHTML(true);
-            $status        = ucfirst($order['status']);
-            $type          = ucfirst($order['order_type']);
+            $status = ucfirst($order['status']);
+            $type   = ucfirst($order['order_type']);
             $mail->Subject = "Order #{$order['id']} Update — {$status}";
-            $mail->Body    = "
+
+            $extraRows = '';
+            if (!empty($order['final_price'])) {
+                $extraRows .= "<tr><td><strong>Agreed Price</strong></td><td>€" . number_format($order['final_price'], 2) . "</td></tr>";
+            }
+            if (!empty($order['down_payment'])) {
+                $extraRows .= "<tr><td><strong>Down Payment</strong></td><td>€" . number_format($order['down_payment'], 2) . "</td></tr>";
+            }
+            if (!empty($order['lease_years'])) {
+                $extraRows .= "<tr><td><strong>Lease Term</strong></td><td>{$order['lease_years']} months</td></tr>";
+            }
+            if (!empty($order['reason'])) {
+                $extraRows .= "<tr><td><strong>Note from us</strong></td><td>" . htmlspecialchars($order['reason']) . "</td></tr>";
+            }
+
+            $mail->Body = "
                 <h2>Order Status Update</h2>
                 <p>Hi {$toName}, your order status has been updated.</p>
                 <table cellpadding='8' style='border-collapse:collapse'>
                     <tr><td><strong>Order #</strong></td><td>{$order['id']}</td></tr>
                     <tr><td><strong>Vehicle</strong></td><td>{$order['brand']} {$order['model']}</td></tr>
                     <tr><td><strong>Type</strong></td><td>{$type}</td></tr>
-                    <tr><td><strong>New Status</strong></td><td><strong>{$status}</strong></td></tr>
+                    <tr><td><strong>Status</strong></td><td><strong>{$status}</strong></td></tr>
+                    {$extraRows}
                 </table>
                 <p>If you have any questions, please contact us.</p>
             ";

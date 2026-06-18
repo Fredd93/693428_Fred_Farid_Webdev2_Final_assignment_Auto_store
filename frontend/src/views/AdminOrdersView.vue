@@ -16,8 +16,8 @@
           <th class="px-4 py-3">Client</th>
           <th class="px-4 py-3">Car</th>
           <th class="px-4 py-3">Type</th>
+          <th class="px-4 py-3">Details</th>
           <th class="px-4 py-3">Status</th>
-          <th class="px-4 py-3">Date</th>
           <th class="px-4 py-3">Action</th>
         </tr>
       </thead>
@@ -27,21 +27,101 @@
           <td class="px-4 py-3">{{ o.client_name }}</td>
           <td class="px-4 py-3">{{ o.brand }} {{ o.model }}</td>
           <td class="px-4 py-3 capitalize">{{ o.order_type }}</td>
+          <td class="px-4 py-3 text-xs text-gray-400">
+            <template v-if="o.order_type === 'lease'">
+              <span v-if="o.down_payment">↓ €{{ Number(o.down_payment).toLocaleString() }}</span>
+              <span v-if="o.lease_years" class="ml-1">· {{ o.lease_years }}mo</span>
+            </template>
+            <span v-else>—</span>
+          </td>
           <td class="px-4 py-3"><StatusBadge :status="o.status" /></td>
-          <td class="px-4 py-3">{{ new Date(o.created_at).toLocaleDateString() }}</td>
           <td class="px-4 py-3">
-            <select @change="e => updateStatus(o.id, e.target.value)" :value="o.status"
-              class="bg-gray-800 border border-gray-700 text-white rounded px-2 py-1 text-xs">
-              <option>pending</option>
-              <option>approved</option>
-              <option>denied</option>
-              <option>completed</option>
-            </select>
+            <button @click="openReview(o)"
+              class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">
+              Review
+            </button>
           </td>
         </tr>
       </tbody>
     </table>
     <Pagination :meta="meta" @change="load" />
+
+    <!-- Review modal -->
+    <div v-if="reviewing" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-lg">
+        <h2 class="text-white font-bold text-lg mb-1">Review Order #{{ reviewing.id }}</h2>
+        <p class="text-gray-400 text-sm mb-4">
+          {{ reviewing.client_name }} — {{ reviewing.brand }} {{ reviewing.model }}
+          <span class="capitalize ml-1">({{ reviewing.order_type }})</span>
+        </p>
+
+        <div class="space-y-4 text-sm">
+          <!-- Status -->
+          <div>
+            <label class="text-gray-400 block mb-1">Decision</label>
+            <select v-model="form.status"
+              class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2">
+              <option value="pending">Pending</option>
+              <option value="approved">Approved</option>
+              <option value="denied">Denied</option>
+              <option value="completed">Completed</option>
+            </select>
+          </div>
+
+          <!-- Final price (purchase approval) -->
+          <div v-if="form.status === 'approved' && reviewing.order_type === 'purchase'">
+            <label class="text-gray-400 block mb-1">Agreed Price (€)</label>
+            <input v-model="form.final_price" type="number" min="0" step="0.01"
+              class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500" />
+          </div>
+
+          <!-- Lease fields (lease approval) -->
+          <template v-if="reviewing.order_type === 'lease'">
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="text-gray-400 block mb-1">Down Payment (€)</label>
+                <input v-model="form.down_payment" type="number" min="0" step="0.01"
+                  class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500" />
+              </div>
+              <div>
+                <label class="text-gray-400 block mb-1">Term</label>
+                <select v-model="form.lease_years"
+                  class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2">
+                  <option :value="null">— unchanged —</option>
+                  <option :value="24">24 months</option>
+                  <option :value="36">36 months</option>
+                  <option :value="48">48 months</option>
+                  <option :value="60">60 months</option>
+                </select>
+              </div>
+            </div>
+          </template>
+
+          <!-- Reason -->
+          <div>
+            <label class="text-gray-400 block mb-1">
+              {{ form.status === 'denied' ? 'Reason for denial *' : 'Note to client (optional)' }}
+            </label>
+            <textarea v-model="form.reason" rows="3"
+              :placeholder="form.status === 'denied' ? 'Explain why the request was denied...' : 'Any additional information for the client...'"
+              class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500 resize-none"></textarea>
+          </div>
+
+          <p v-if="formErr" class="text-red-400">{{ formErr }}</p>
+
+          <div class="flex gap-3 pt-1">
+            <button @click="submitReview" :disabled="saving"
+              class="flex-1 bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-2 rounded-lg font-semibold">
+              {{ saving ? 'Saving...' : 'Confirm' }}
+            </button>
+            <button @click="reviewing = null"
+              class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg">
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -51,9 +131,13 @@ import StatusBadge from '../components/StatusBadge.vue'
 import Pagination  from '../components/Pagination.vue'
 import client from '../api/client.js'
 
-const orders  = ref([])
-const meta    = ref({})
-const loading = ref(true)
+const orders    = ref([])
+const meta      = ref({})
+const loading   = ref(true)
+const reviewing = ref(null)
+const saving    = ref(false)
+const formErr   = ref('')
+const form      = ref({})
 
 async function load(page = 1) {
   loading.value = true
@@ -68,12 +152,39 @@ async function load(page = 1) {
   }
 }
 
-async function updateStatus(id, status) {
+function openReview(order) {
+  reviewing.value = order
+  formErr.value   = ''
+  form.value = {
+    status:       order.status,
+    reason:       order.reason       ?? '',
+    final_price:  order.final_price  ?? '',
+    down_payment: order.down_payment ?? '',
+    lease_years:  order.lease_years  ?? null,
+  }
+}
+
+async function submitReview() {
+  if (form.value.status === 'denied' && !form.value.reason?.trim()) {
+    formErr.value = 'A reason is required when denying a request.'
+    return
+  }
+  saving.value  = true
+  formErr.value = ''
   try {
-    await client.put(`/orders/${id}`, { status })
+    await client.put(`/orders/${reviewing.value.id}`, {
+      status:       form.value.status,
+      reason:       form.value.reason       || null,
+      final_price:  form.value.final_price  || null,
+      down_payment: form.value.down_payment || null,
+      lease_years:  form.value.lease_years  || null,
+    })
+    reviewing.value = null
     await load()
   } catch (e) {
-    alert(e.response?.data?.error ?? 'Failed to update order status')
+    formErr.value = e.response?.data?.error ?? 'Failed to update order'
+  } finally {
+    saving.value = false
   }
 }
 

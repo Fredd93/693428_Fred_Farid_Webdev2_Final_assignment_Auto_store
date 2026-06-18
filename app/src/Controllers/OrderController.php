@@ -43,11 +43,13 @@ class OrderController
         }
 
         $data = [
-            ':user_id'    => (int)$auth['sub'],
-            ':car_id'     => (int)$body['car_id'],
-            ':order_type' => $body['order_type'],
-            ':status'     => 'pending',
-            ':notes'      => $body['notes'] ?? '',
+            ':user_id'     => (int)$auth['sub'],
+            ':car_id'      => (int)$body['car_id'],
+            ':order_type'  => $body['order_type'],
+            ':status'      => 'pending',
+            ':notes'       => $body['notes']        ?? '',
+            ':down_payment'=> isset($body['down_payment']) ? (float)$body['down_payment'] : null,
+            ':lease_years' => isset($body['lease_years'])  ? (int)$body['lease_years']    : null,
         ];
 
         $id    = $this->orders->create($data);
@@ -102,7 +104,12 @@ class OrderController
         $allowed = ['pending','approved','denied','completed'];
         if (!in_array($status, $allowed)) ResponseHelper::error('Invalid status', 400);
 
-        $this->orders->updateStatus($id, $status);
+        $reason      = isset($body['reason'])       ? trim($body['reason'])          : null;
+        $finalPrice  = isset($body['final_price'])  ? (float)$body['final_price']    : null;
+        $downPayment = isset($body['down_payment']) ? (float)$body['down_payment']   : null;
+        $leaseYears  = isset($body['lease_years'])  ? (int)$body['lease_years']      : null;
+
+        $this->orders->updateStatus($id, $status, $reason, $finalPrice, $downPayment, $leaseYears);
         $updated = $this->orders->findById($id);
 
         MailHelper::sendOrderStatusUpdate(

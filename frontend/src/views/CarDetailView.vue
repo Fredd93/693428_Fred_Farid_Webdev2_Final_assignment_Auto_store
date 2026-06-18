@@ -22,7 +22,7 @@
               class="flex-1 bg-red-600 hover:bg-red-700 text-white py-3 rounded-lg font-semibold">
               Buy Now
             </button>
-            <button v-if="car.lease_available" @click="placeOrder('lease')"
+            <button v-if="car.lease_available" @click="showLease = true"
               class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-3 rounded-lg font-semibold">
               Lease
             </button>
@@ -87,6 +87,42 @@
       </div>
     </template>
 
+    <!-- Lease modal -->
+    <div v-if="showLease" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
+      <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md">
+        <h2 class="text-white font-bold text-lg mb-4">Lease Request — {{ car.brand }} {{ car.model }}</h2>
+        <form @submit.prevent="submitLease" class="space-y-4 text-sm">
+          <div>
+            <label class="text-gray-400 block mb-1">Down Payment (€)</label>
+            <input v-model="leaseForm.down_payment" type="number" min="0" step="0.01" required
+              class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500" />
+          </div>
+          <div>
+            <label class="text-gray-400 block mb-1">Lease Term</label>
+            <select v-model="leaseForm.lease_years" required
+              class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2">
+              <option :value="24">24 months</option>
+              <option :value="36">36 months</option>
+              <option :value="48">48 months</option>
+              <option :value="60">60 months</option>
+            </select>
+          </div>
+          <p v-if="orderErr" class="text-red-400">{{ orderErr }}</p>
+          <p v-if="orderMsg" class="text-green-400">{{ orderMsg }}</p>
+          <div class="flex gap-3 pt-1">
+            <button type="submit"
+              class="flex-1 bg-red-600 hover:bg-red-700 text-white py-2 rounded-lg font-semibold">
+              Submit Request
+            </button>
+            <button type="button" @click="showLease = false"
+              class="flex-1 bg-gray-700 hover:bg-gray-600 text-white py-2 rounded-lg">
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
     <!-- Appointment modal -->
     <div v-if="showAppt" class="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
       <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md">
@@ -146,6 +182,29 @@ const car      = ref(null)
 const loading  = ref(true)
 const orderMsg = ref('')
 const orderErr = ref('')
+
+// Lease
+const showLease  = ref(false)
+const leaseForm  = ref({ down_payment: '', lease_years: 36 })
+
+async function submitLease() {
+  if (!auth.isLoggedIn) { router.push('/login'); return }
+  orderErr.value = ''
+  orderMsg.value = ''
+  try {
+    await client.post('/orders', {
+      car_id:       car.value.id,
+      order_type:   'lease',
+      down_payment: leaseForm.value.down_payment,
+      lease_years:  leaseForm.value.lease_years,
+    })
+    orderMsg.value = 'Lease request submitted! We will review and get back to you.'
+    showLease.value = false
+    leaseForm.value = { down_payment: '', lease_years: 36 }
+  } catch (e) {
+    orderErr.value = e.response?.data?.error ?? 'Failed to submit lease request'
+  }
+}
 
 // Appointment
 const showAppt  = ref(false)

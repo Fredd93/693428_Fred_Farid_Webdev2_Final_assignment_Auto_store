@@ -29,17 +29,27 @@ class OrderModel extends BaseModel
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO orders (user_id, car_id, order_type, status, notes)
-             VALUES (:user_id, :car_id, :order_type, :status, :notes)'
+            'INSERT INTO orders (user_id, car_id, order_type, status, notes, down_payment, lease_years)
+             VALUES (:user_id, :car_id, :order_type, :status, :notes, :down_payment, :lease_years)'
         );
         $stmt->execute($data);
         return (int) $this->db->lastInsertId();
     }
 
-    public function updateStatus(int $id, string $status): bool
+    public function updateStatus(int $id, string $status, ?string $reason, ?float $finalPrice, ?float $downPayment, ?int $leaseYears): bool
     {
-        $stmt = $this->db->prepare('UPDATE orders SET status = :status WHERE id = :id');
-        return $stmt->execute([':status' => $status, ':id' => $id]);
+        $stmt = $this->db->prepare(
+            'UPDATE orders SET status = :status, reason = :reason, final_price = :final_price,
+             down_payment = :down_payment, lease_years = :lease_years WHERE id = :id'
+        );
+        return $stmt->execute([
+            ':status'       => $status,
+            ':reason'       => $reason,
+            ':final_price'  => $finalPrice,
+            ':down_payment' => $downPayment,
+            ':lease_years'  => $leaseYears,
+            ':id'           => $id,
+        ]);
     }
 
     public function exportAll(): array

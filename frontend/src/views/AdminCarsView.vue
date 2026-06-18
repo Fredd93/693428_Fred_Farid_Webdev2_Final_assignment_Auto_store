@@ -51,7 +51,11 @@
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Transmission</label>
-              <input v-model="form.transmission" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
+              <select v-model="form.transmission" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2">
+                <option value="Manual">Manual</option>
+                <option value="Automatic">Automatic</option>
+                <option value="Semi-Automatic">Semi-Automatic</option>
+              </select>
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Price (€)</label>
