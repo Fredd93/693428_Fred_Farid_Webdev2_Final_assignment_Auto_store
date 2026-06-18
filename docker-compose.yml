@@ -33,10 +33,12 @@ services:
       DB_PASSWORD: secret123
       DB_CHARSET: utf8mb4
       APP_SECRET: gta_jwt_secret_change_in_prod
-      MAIL_HOST: mailhog
-      MAIL_PORT: 1025
+      MAIL_HOST: sandbox.smtp.mailtrap.io
+      MAIL_PORT: 2525
       MAIL_FROM: noreply@grandtransmissionauto.com
       MAIL_FROM_NAME: Grand Transmission Auto
+      MAIL_USER: ${MAIL_USER}
+      MAIL_PASS: ${MAIL_PASS}
     depends_on:
       - mysql
       - mailhog

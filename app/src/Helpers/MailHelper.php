@@ -10,10 +10,21 @@ class MailHelper
     {
         $mail = new PHPMailer(true);
         $mail->isSMTP();
-        $mail->Host       = $_ENV['MAIL_HOST']      ?? getenv('MAIL_HOST')      ?: 'mailhog';
-        $mail->Port       = (int)($_ENV['MAIL_PORT'] ?? getenv('MAIL_PORT')      ?: 1025);
-        $mail->SMTPAuth   = false;
-        $mail->CharSet    = 'UTF-8';
+        $mail->Host     = $_ENV['MAIL_HOST'] ?? getenv('MAIL_HOST') ?: 'mailhog';
+        $mail->Port     = (int)($_ENV['MAIL_PORT'] ?? getenv('MAIL_PORT') ?: 1025);
+        $mail->CharSet  = 'UTF-8';
+
+        $user = $_ENV['MAIL_USER'] ?? getenv('MAIL_USER') ?: '';
+        $pass = $_ENV['MAIL_PASS'] ?? getenv('MAIL_PASS') ?: '';
+
+        if ($user && $pass) {
+            $mail->SMTPAuth   = true;
+            $mail->Username   = $user;
+            $mail->Password   = $pass;
+            $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        } else {
+            $mail->SMTPAuth = false;
+        }
 
         $from     = $_ENV['MAIL_FROM']      ?? getenv('MAIL_FROM')      ?: 'noreply@grandtransmissionauto.com';
         $fromName = $_ENV['MAIL_FROM_NAME'] ?? getenv('MAIL_FROM_NAME') ?: 'Grand Transmission Auto';
