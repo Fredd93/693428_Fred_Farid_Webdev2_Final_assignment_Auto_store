@@ -137,19 +137,31 @@ async function deleteCar(id) {
 
 async function submitCar() {
   formErr.value = ''
-  const fd = new FormData()
-  Object.entries(form.value).forEach(([k, v]) => {
-    if (k === 'imageFiles') {
-      v.forEach(file => fd.append('images[]', file))
-    } else {
-      fd.append(k, v === true ? 1 : v === false ? 0 : v)
-    }
-  })
+  const hasNewImages = form.value.imageFiles?.length > 0
+
   try {
-    if (editing.value) {
-      await client.put(`/cars/${editing.value}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    if (editing.value && !hasNewImages) {
+      // PUT with no new files → send JSON so PHP can read it on PUT requests
+      const payload = { ...form.value }
+      delete payload.imageFiles
+      payload.on_sale         = payload.on_sale         ? 1 : 0
+      payload.lease_available = payload.lease_available ? 1 : 0
+      await client.put(`/cars/${editing.value}`, payload)
     } else {
-      await client.post('/cars', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      // New car or new images → use FormData
+      const fd = new FormData()
+      Object.entries(form.value).forEach(([k, v]) => {
+        if (k === 'imageFiles') {
+          v.forEach(file => fd.append('images[]', file))
+        } else {
+          fd.append(k, v === true ? 1 : v === false ? 0 : v)
+        }
+      })
+      if (editing.value) {
+        await client.put(`/cars/${editing.value}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      } else {
+        await client.post('/cars', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+      }
     }
     showModal.value = false
     await load()

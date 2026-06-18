@@ -18,8 +18,7 @@
 
     <!-- MOTD banner -->
     <div v-if="motd" class="relative bg-gray-900 border border-gray-700 rounded-xl px-6 py-4 flex items-start gap-4">
-      <span class="text-red-500 text-xl mt-0.5">&#9432;</span>
-      <p v-if="!editingMotd" class="text-gray-300 flex-1">{{ motd }}</p>
+      <p v-if="!editingMotd" class="text-white font-semibold flex-1 tracking-wide">{{ motd }}</p>
       <div v-else class="flex-1 flex gap-2">
         <input v-model="motdDraft" type="text"
           class="flex-1 bg-gray-800 border border-gray-700 text-white rounded px-3 py-1.5 text-sm focus:outline-none focus:border-red-500" />

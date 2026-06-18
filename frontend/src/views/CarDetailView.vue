@@ -37,6 +37,54 @@
           <p v-if="orderErr" class="mt-4 text-red-400 text-sm">{{ orderErr }}</p>
         </div>
       </div>
+
+      <!-- Specs table -->
+      <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 mt-8">
+        <h2 class="text-lg font-semibold text-white mb-4">Vehicle Details</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+          <div v-if="car.engine_spec" class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Engine</span>
+            <span class="text-white font-medium">{{ car.engine_spec }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Transmission</span>
+            <span class="text-white font-medium">{{ car.transmission }}</span>
+          </div>
+          <div v-if="car.car_condition" class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Condition</span>
+            <span class="text-white font-medium">{{ car.car_condition }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Color</span>
+            <span class="text-white font-medium">{{ car.color }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Year</span>
+            <span class="text-white font-medium">{{ car.year }}</span>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Status</span>
+            <span class="capitalize font-medium"
+              :class="car.status === 'available' ? 'text-green-400' : car.status === 'sold' ? 'text-red-400' : 'text-yellow-400'">
+              {{ car.status }}
+            </span>
+          </div>
+          <div class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Lease Available</span>
+            <span class="font-medium" :class="car.lease_available ? 'text-green-400' : 'text-gray-500'">
+              {{ car.lease_available ? 'Yes' : 'No' }}
+            </span>
+          </div>
+          <div v-if="car.on_sale" class="flex justify-between border-b border-gray-800 pb-2">
+            <span class="text-gray-400">Discount</span>
+            <span class="text-red-400 font-medium">{{ car.discount }}%</span>
+          </div>
+        </div>
+        <div v-if="car.lease_available && car.lease_terms" class="mt-4 pt-3 border-t border-gray-800">
+          <p class="text-gray-400 text-sm mb-1">Lease Terms</p>
+          <p class="text-white text-sm">{{ car.lease_terms }}</p>
+        </div>
+      </div>
     </template>
 
     <!-- Appointment modal -->
