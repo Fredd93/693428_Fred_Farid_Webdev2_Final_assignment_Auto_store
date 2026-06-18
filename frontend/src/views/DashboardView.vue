@@ -29,6 +29,23 @@
       </div>
     </section>
 
+    <!-- Appointments Section -->
+    <section>
+      <h2 class="text-xl font-semibold text-white mb-4">My Appointments</h2>
+      <div v-if="apptLoading" class="text-gray-400">Loading...</div>
+      <div v-else-if="!appointments.length" class="text-gray-500">No appointments booked yet.</div>
+      <div v-else class="space-y-3">
+        <div v-for="a in appointments" :key="a.appointment_id"
+          class="bg-gray-900 border border-gray-800 rounded-lg p-4 flex justify-between items-center">
+          <div>
+            <p class="text-white font-medium">{{ a.brand }} {{ a.model }}</p>
+            <p class="text-gray-400 text-sm">{{ new Date(a.appointment_date).toLocaleString('en-GB', { dateStyle: 'medium', timeStyle: 'short' }) }}</p>
+          </div>
+          <StatusBadge :status="a.status" />
+        </div>
+      </div>
+    </section>
+
     <!-- Orders Section -->
     <section>
       <h2 class="text-xl font-semibold text-white mb-4">My Orders</h2>
@@ -87,6 +104,16 @@ async function saveProfile() {
   }
 }
 
+// Appointments
+const appointments = ref([])
+const apptLoading  = ref(true)
+
+async function loadAppointments() {
+  const { data } = await client.get('/appointments', { params: { limit: 10 } })
+  appointments.value = data.data
+  apptLoading.value  = false
+}
+
 // Orders
 const orders  = ref([])
 const meta    = ref({})
@@ -99,5 +126,5 @@ async function load(page = 1) {
   loading.value = false
 }
 
-onMounted(() => load())
+onMounted(() => { load(); loadAppointments() })
 </script>

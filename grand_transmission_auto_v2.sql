@@ -83,6 +83,27 @@ CREATE TABLE car_images (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 -- -------------------------------------------------------
+-- APPOINTMENTS: rebuilt with FK referencing cars(id)
+-- -------------------------------------------------------
+DROP TABLE IF EXISTS appointments;
+CREATE TABLE appointments (
+  appointment_id   INT(11)      NOT NULL AUTO_INCREMENT,
+  car_id           INT(11)      NOT NULL,
+  client_name      VARCHAR(100) DEFAULT NULL,
+  client_email     VARCHAR(100) DEFAULT NULL,
+  client_phone     VARCHAR(20)  DEFAULT NULL,
+  appointment_date DATETIME     NOT NULL,
+  status           ENUM('pending','confirmed','cancelled') DEFAULT 'pending',
+  employee_id      INT(11)      DEFAULT NULL,
+  created_at       TIMESTAMP    DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (appointment_id),
+  KEY fk_appt_car (car_id),
+  KEY fk_appt_emp (employee_id),
+  CONSTRAINT fk_appt_car FOREIGN KEY (car_id)      REFERENCES cars(id)  ON DELETE CASCADE,
+  CONSTRAINT fk_appt_emp FOREIGN KEY (employee_id) REFERENCES users(id) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- -------------------------------------------------------
 -- SEED: Extra cars (Honda Civic 2003, Toyota Corolla 2002, Mitsubishi ASX 2020)
 -- -------------------------------------------------------
 INSERT INTO cars (brand, model, year, transmission, engine_spec, car_condition, description, image_path, color, price, lease_available, lease_terms, on_sale, discount, status) VALUES

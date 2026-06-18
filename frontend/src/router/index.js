@@ -27,6 +27,11 @@ const routes = [
     component: () => import('../views/AdminUsersView.vue'),
     meta: { requiresAuth: true, requiresRole: 'admin' }
   },
+  {
+    path: '/admin/appointments',
+    component: () => import('../views/AdminAppointmentsView.vue'),
+    meta: { requiresAuth: true, requiresRole: 'employee' }
+  },
 ]
 
 const router = createRouter({

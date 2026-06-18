@@ -9,7 +9,8 @@
 
       <template v-if="auth.isLoggedIn">
         <RouterLink v-if="auth.isEmployee" to="/admin/cars"   class="text-gray-300 hover:text-white">Manage Cars</RouterLink>
-        <RouterLink v-if="auth.isEmployee" to="/admin/orders" class="text-gray-300 hover:text-white">Orders</RouterLink>
+        <RouterLink v-if="auth.isEmployee" to="/admin/orders"       class="text-gray-300 hover:text-white">Orders</RouterLink>
+        <RouterLink v-if="auth.isEmployee" to="/admin/appointments" class="text-gray-300 hover:text-white">Appointments</RouterLink>
         <RouterLink v-if="auth.isAdmin"    to="/admin/users"  class="text-gray-300 hover:text-white">Users</RouterLink>
         <RouterLink to="/dashboard" class="text-gray-300 hover:text-white">Dashboard</RouterLink>
         <button @click="handleLogout" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded">

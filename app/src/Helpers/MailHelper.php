@@ -67,6 +67,54 @@ class MailHelper
         }
     }
 
+    public static function sendAppointmentConfirmation(string $toEmail, string $toName, array $appt): void
+    {
+        try {
+            $mail = self::mailer();
+            $mail->addAddress($toEmail, $toName);
+            $mail->isHTML(true);
+            $mail->Subject = "Test Drive Booked — {$appt['brand']} {$appt['model']}";
+            $date = date('D, d M Y H:i', strtotime($appt['appointment_date']));
+            $mail->Body    = "
+                <h2>Test Drive Confirmed</h2>
+                <p>Hi {$toName}, your test drive appointment has been received.</p>
+                <table cellpadding='8' style='border-collapse:collapse'>
+                    <tr><td><strong>Vehicle</strong></td><td>{$appt['brand']} {$appt['model']}</td></tr>
+                    <tr><td><strong>Date &amp; Time</strong></td><td>{$date}</td></tr>
+                    <tr><td><strong>Status</strong></td><td>Pending confirmation</td></tr>
+                </table>
+                <p>We will confirm your appointment shortly.</p>
+            ";
+            $mail->send();
+        } catch (\Exception $e) {
+            error_log('MailHelper::sendAppointmentConfirmation failed: ' . $e->getMessage());
+        }
+    }
+
+    public static function sendAppointmentStatusUpdate(string $toEmail, string $toName, array $appt): void
+    {
+        try {
+            $mail = self::mailer();
+            $mail->addAddress($toEmail, $toName);
+            $mail->isHTML(true);
+            $status = ucfirst($appt['status']);
+            $date   = date('D, d M Y H:i', strtotime($appt['appointment_date']));
+            $mail->Subject = "Appointment Update — {$status}";
+            $mail->Body    = "
+                <h2>Appointment Status Update</h2>
+                <p>Hi {$toName}, your test drive appointment has been updated.</p>
+                <table cellpadding='8' style='border-collapse:collapse'>
+                    <tr><td><strong>Vehicle</strong></td><td>{$appt['brand']} {$appt['model']}</td></tr>
+                    <tr><td><strong>Date &amp; Time</strong></td><td>{$date}</td></tr>
+                    <tr><td><strong>New Status</strong></td><td><strong>{$status}</strong></td></tr>
+                </table>
+            ";
+            $mail->send();
+        } catch (\Exception $e) {
+            error_log('MailHelper::sendAppointmentStatusUpdate failed: ' . $e->getMessage());
+        }
+    }
+
     public static function sendOrderStatusUpdate(string $toEmail, string $toName, array $order): void
     {
         try {

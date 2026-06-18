@@ -43,10 +43,11 @@ class AuthMiddleware
         $secret = $_ENV['APP_SECRET'] ?? getenv('APP_SECRET') ?: 'changeme_secret';
 
         $payload = [
-            'sub'  => $user['id'],
-            'role' => $user['role'],
-            'name' => $user['name'],
-            'exp'  => time() + 86400,
+            'sub'   => $user['id'],
+            'role'  => $user['role'],
+            'name'  => $user['name'],
+            'email' => $user['email'],
+            'exp'   => time() + 86400,
         ];
 
         return JWT::encode($payload, $secret, 'HS256');
