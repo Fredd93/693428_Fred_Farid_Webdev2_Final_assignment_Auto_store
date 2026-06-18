@@ -44,9 +44,9 @@ docker exec -i $(docker-compose ps -q mysql) \
 
 | Service | URL |
 |---|---|
-| Application | http://localhost |
-| phpMyAdmin | http://localhost:8080 |
-| MailHog | http://localhost:8025 |
+| Frontend | http://localhost:5173 |
+| Backend API | http://localhost:8080/api |
+| MailHog (email testing) | http://localhost:8025 |
 | Swagger API Docs | http://localhost:8090 |
 
 ---
@@ -55,9 +55,11 @@ docker exec -i $(docker-compose ps -q mysql) \
 
 | Role | Email | Password |
 |---|---|---|
-| Admin | admin@gta.com | admin123 |
-| Employee | employee@gta.com | employee123 |
-| Client | client@gta.com | client123 |
+| Admin | admin@gta.com | password |
+| Employee | employee@gta.com | password |
+| Client | client@gta.com | password |
+
+> Passwords are stored as bcrypt hashes in the database — the plaintext passwords above are only provided here for assessment purposes.
 
 ---
 
@@ -107,6 +109,17 @@ Authorization: Bearer <token>
 ```
 
 Token is obtained from `POST /api/auth/login`.
+
+---
+
+## Dependencies
+
+All dependencies are managed automatically — no manual installs needed:
+
+- **PHP packages** — via Composer (`composer.json` / `composer.lock`)
+- **Frontend packages** — via npm (`package.json` / `package-lock.json`)
+
+Docker installs everything on first run. The only requirement on the host machine is **Docker Desktop**.
 
 ---
 
