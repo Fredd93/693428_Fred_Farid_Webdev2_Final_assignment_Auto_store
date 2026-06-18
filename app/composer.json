@@ -7,5 +7,12 @@
         "psr-4": {
             "GTA\\": "src/"
         }
+    },
+    "config": {
+        "policy": {
+            "advisories": {
+                "block": false
+            }
+        }
     }
 }
