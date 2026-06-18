@@ -16,15 +16,6 @@
       <SaleCarousel />
     </div>
 
-    <!-- Featured cars grid -->
-    <div>
-      <h2 class="text-2xl font-semibold text-white mb-4">Featured Cars</h2>
-      <div v-if="loading" class="text-gray-400">Loading...</div>
-      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <CarCard v-for="car in featured" :key="car.id" :car="car" />
-      </div>
-    </div>
-
     <!-- MOTD banner -->
     <div v-if="motd" class="relative bg-gray-900 border border-gray-700 rounded-xl px-6 py-4 flex items-start gap-4">
       <span class="text-red-500 text-xl mt-0.5">&#9432;</span>
@@ -37,6 +28,15 @@
       </div>
       <button v-if="auth.isEmployee && !editingMotd" @click="startEditMotd"
         class="text-gray-500 hover:text-white text-xs ml-auto shrink-0">Edit</button>
+    </div>
+
+    <!-- Featured cars grid -->
+    <div>
+      <h2 class="text-2xl font-semibold text-white mb-4">Featured Cars</h2>
+      <div v-if="loading" class="text-gray-400">Loading...</div>
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <CarCard v-for="car in featured" :key="car.id" :car="car" />
+      </div>
     </div>
 
   </section>
