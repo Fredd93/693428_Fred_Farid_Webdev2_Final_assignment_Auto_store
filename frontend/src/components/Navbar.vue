@@ -1,6 +1,6 @@
 <template>
   <nav class="bg-gray-900 border-b border-gray-800 px-6 py-3 flex items-center justify-between">
-    <RouterLink to="/" class="text-white font-bold text-xl tracking-wide">
+    <RouterLink to="/home" class="text-white font-bold text-xl tracking-wide">
       GT <span class="text-red-500">Auto</span>
     </RouterLink>
 

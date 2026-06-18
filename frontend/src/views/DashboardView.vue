@@ -109,9 +109,14 @@ const appointments = ref([])
 const apptLoading  = ref(true)
 
 async function loadAppointments() {
-  const { data } = await client.get('/appointments', { params: { limit: 10 } })
-  appointments.value = data.data
-  apptLoading.value  = false
+  try {
+    const { data } = await client.get('/appointments', { params: { limit: 10 } })
+    appointments.value = data.data
+  } catch {
+    appointments.value = []
+  } finally {
+    apptLoading.value = false
+  }
 }
 
 // Orders
@@ -120,10 +125,15 @@ const meta    = ref({})
 const loading = ref(true)
 
 async function load(page = 1) {
-  const { data } = await client.get('/orders', { params: { page, limit: 10 } })
-  orders.value  = data.data
-  meta.value    = data.meta
-  loading.value = false
+  try {
+    const { data } = await client.get('/orders', { params: { page, limit: 10 } })
+    orders.value  = data.data
+    meta.value    = data.meta
+  } catch {
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 onMounted(() => { load(); loadAppointments() })

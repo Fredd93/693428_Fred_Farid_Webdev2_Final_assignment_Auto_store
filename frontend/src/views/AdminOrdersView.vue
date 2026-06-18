@@ -57,25 +57,38 @@ const loading = ref(true)
 
 async function load(page = 1) {
   loading.value = true
-  const { data } = await client.get('/orders', { params: { page, limit: 15 } })
-  orders.value  = data.data
-  meta.value    = data.meta
-  loading.value = false
+  try {
+    const { data } = await client.get('/orders', { params: { page, limit: 15 } })
+    orders.value  = data.data
+    meta.value    = data.meta
+  } catch {
+    orders.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 async function updateStatus(id, status) {
-  await client.put(`/orders/${id}`, { status })
-  await load()
+  try {
+    await client.put(`/orders/${id}`, { status })
+    await load()
+  } catch (e) {
+    alert(e.response?.data?.error ?? 'Failed to update order status')
+  }
 }
 
 async function exportCsv() {
-  const { data } = await client.get('/orders/export', { responseType: 'blob' })
-  const url  = URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
-  const link = document.createElement('a')
-  link.href  = url
-  link.download = `orders_${new Date().toISOString().slice(0, 10)}.csv`
-  link.click()
-  URL.revokeObjectURL(url)
+  try {
+    const { data } = await client.get('/orders/export', { responseType: 'blob' })
+    const url  = URL.createObjectURL(new Blob([data], { type: 'text/csv' }))
+    const link = document.createElement('a')
+    link.href  = url
+    link.download = `orders_${new Date().toISOString().slice(0, 10)}.csv`
+    link.click()
+    URL.revokeObjectURL(url)
+  } catch {
+    alert('Export failed. Please try again.')
+  }
 }
 
 onMounted(() => load())

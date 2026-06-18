@@ -3,6 +3,7 @@ use GTA\Controllers\CarController;
 use GTA\Controllers\OrderController;
 use GTA\Controllers\UserController;
 use GTA\Controllers\AppointmentController;
+use GTA\Controllers\MotdController;
 
 // Cars
 Route::add('/api/cars',               fn() => (new CarController())->index(),   'GET');
@@ -26,7 +27,12 @@ Route::add('/api/appointments/([0-9]+)',   fn($id) => (new AppointmentController
 Route::add('/api/appointments/([0-9]+)',   fn($id) => (new AppointmentController())->destroy((int)$id), 'DELETE');
 
 // Users
-Route::add('/api/users',              fn() => (new UserController())->index(),   'GET');
-Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->show((int)$id),    'GET');
-Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->update((int)$id),  'PUT');
-Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->destroy((int)$id), 'DELETE');
+Route::add('/api/users',              fn() => (new UserController())->index(),              'GET');
+Route::add('/api/users',              fn() => (new UserController())->store(),              'POST');
+Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->show((int)$id),   'GET');
+Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->update((int)$id), 'PUT');
+Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->destroy((int)$id),'DELETE');
+
+// MOTD
+Route::add('/api/motd', fn() => (new MotdController())->show(),   'GET');
+Route::add('/api/motd', fn() => (new MotdController())->update(), 'PUT');

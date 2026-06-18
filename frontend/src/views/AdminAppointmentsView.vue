@@ -57,15 +57,24 @@ function formatDate(dt) {
 
 async function load(page = 1) {
   loading.value = true
-  const { data } = await client.get('/appointments', { params: { page, limit: 15 } })
-  appointments.value = data.data
-  meta.value         = data.meta
-  loading.value      = false
+  try {
+    const { data } = await client.get('/appointments', { params: { page, limit: 15 } })
+    appointments.value = data.data
+    meta.value         = data.meta
+  } catch {
+    appointments.value = []
+  } finally {
+    loading.value = false
+  }
 }
 
 async function updateStatus(id, status) {
-  await client.put(`/appointments/${id}`, { status })
-  await load()
+  try {
+    await client.put(`/appointments/${id}`, { status })
+    await load()
+  } catch (e) {
+    alert(e.response?.data?.error ?? 'Failed to update appointment status')
+  }
 }
 
 onMounted(() => load())

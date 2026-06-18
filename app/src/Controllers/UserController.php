@@ -19,6 +19,30 @@ class UserController
         ResponseHelper::json($this->users->listPaginated($page, $limit));
     }
 
+    public function store(): void
+    {
+        AuthMiddleware::require('admin');
+        $body     = json_decode(file_get_contents('php://input'), true) ?? [];
+        $name     = trim($body['name']     ?? '');
+        $email    = trim($body['email']    ?? '');
+        $password = trim($body['password'] ?? '');
+        $role     = in_array($body['role'] ?? '', ['employee', 'admin']) ? $body['role'] : 'employee';
+
+        if (!$name || !$email || !$password) {
+            ResponseHelper::error('name, email, and password are required', 422);
+        }
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            ResponseHelper::error('Invalid email address', 422);
+        }
+        if ($this->users->findByEmail($email)) {
+            ResponseHelper::error('Email is already in use', 409);
+        }
+
+        $id   = $this->users->create($name, $email, password_hash($password, PASSWORD_BCRYPT), $role);
+        $user = $this->users->findById($id);
+        ResponseHelper::json($user, 201);
+    }
+
     public function show(int $id): void
     {
         $auth = AuthMiddleware::require('client');

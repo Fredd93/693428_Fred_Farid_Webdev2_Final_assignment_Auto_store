@@ -146,4 +146,17 @@ JOIN (
   SELECT 'Mitsubishi',          'ASX',                 'assets/images/Mitsubishi-ASX-2020-interior.jpg', 2
 ) v ON c.brand = v.brand AND c.model = v.model AND c.year IN (2003, 2002, 2020);
 
+-- -------------------------------------------------------
+-- SETTINGS: key/value store (MOTD, etc.)
+-- -------------------------------------------------------
+DROP TABLE IF EXISTS settings;
+CREATE TABLE settings (
+  `key`  VARCHAR(100) NOT NULL,
+  value  TEXT         NOT NULL DEFAULT '',
+  PRIMARY KEY (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+INSERT INTO settings (`key`, value) VALUES
+  ('motd', 'Welcome to Grand Transmission Auto! Browse our latest vehicles and find your perfect match.');
+
 SET FOREIGN_KEY_CHECKS = 1;
