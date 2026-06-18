@@ -1,1 +1,5 @@
 app/public/assets/js/argly/node_modules
+frontend/node_modules/
+frontend/dist/
+.superpowers/
+
