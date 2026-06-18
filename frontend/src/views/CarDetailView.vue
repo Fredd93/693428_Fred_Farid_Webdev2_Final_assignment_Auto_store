@@ -44,6 +44,18 @@
       <div class="bg-gray-900 border border-gray-700 rounded-xl p-6 w-full max-w-md">
         <h2 class="text-white font-bold text-lg mb-4">Book a Test Drive</h2>
         <form @submit.prevent="bookAppointment" class="space-y-4 text-sm">
+          <template v-if="!auth.isLoggedIn">
+            <div>
+              <label class="text-gray-400 block mb-1">Full Name</label>
+              <input v-model="apptForm.name" type="text" required
+                class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500" />
+            </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Email</label>
+              <input v-model="apptForm.email" type="email" required
+                class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500" />
+            </div>
+          </template>
           <div>
             <label class="text-gray-400 block mb-1">Preferred Date &amp; Time</label>
             <input v-model="apptForm.date" type="datetime-local" required
@@ -89,7 +101,7 @@ const orderErr = ref('')
 
 // Appointment
 const showAppt  = ref(false)
-const apptForm  = ref({ date: '', phone: '' })
+const apptForm  = ref({ name: '', email: '', date: '', phone: '' })
 const apptSaving = ref(false)
 const apptMsg   = ref('')
 const apptErr   = ref('')
@@ -103,7 +115,6 @@ onMounted(async () => {
 })
 
 async function bookAppointment() {
-  if (!auth.isLoggedIn) { router.push('/login'); return }
   apptSaving.value = true
   apptErr.value    = ''
   apptMsg.value    = ''
@@ -112,9 +123,11 @@ async function bookAppointment() {
       car_id:           car.value.id,
       appointment_date: apptForm.value.date,
       client_phone:     apptForm.value.phone,
+      client_name:      apptForm.value.name,
+      client_email:     apptForm.value.email,
     })
-    apptMsg.value   = 'Test drive booked! We will confirm shortly.'
-    apptForm.value  = { date: '', phone: '' }
+    apptMsg.value  = 'Test drive booked! We will confirm shortly.'
+    apptForm.value = { name: '', email: '', date: '', phone: '' }
   } catch (e) {
     apptErr.value = e.response?.data?.error ?? 'Booking failed.'
   } finally {

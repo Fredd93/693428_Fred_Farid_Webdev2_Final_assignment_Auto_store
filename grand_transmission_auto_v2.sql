@@ -137,7 +137,7 @@ SELECT c.id, v.image_path, v.sort_order FROM cars c
 JOIN (
   SELECT 'Honda'      AS brand, 'Civic'   AS model, 'assets/images/Honda_civic_2003_front.jpeg'     AS image_path, 0 AS sort_order UNION ALL
   SELECT 'Honda',               'Civic',              'assets/images/Honda_civic_2003_back.jpg',         1 UNION ALL
-  SELECT 'Honda',               'Civic',              'assets/images/Hona_Civic_2003_interior.png',      2 UNION ALL
+  SELECT 'Honda',               'Civic',              'assets/images/Honda_Civic_2003_interior.png',     2 UNION ALL
   SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_front.jpg',    0 UNION ALL
   SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_back.jpg',     1 UNION ALL
   SELECT 'Toyota',              'Corolla',             'assets/images/Toyota_corolla_2002_interior.jpg', 2 UNION ALL

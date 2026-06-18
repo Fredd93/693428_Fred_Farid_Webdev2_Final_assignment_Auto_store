@@ -25,12 +25,11 @@ class AppointmentController
 
     public function store(): void
     {
-        $auth = AuthMiddleware::require('client');
-        $body = json_decode(file_get_contents('php://input'), true) ?? [];
-
-        $carId   = (int)($body['car_id']           ?? 0);
-        $phone   = trim($body['client_phone']       ?? '');
-        $date    = trim($body['appointment_date']   ?? '');
+        // Public endpoint — works for guests and logged-in users
+        $body  = json_decode(file_get_contents('php://input'), true) ?? [];
+        $carId = (int)($body['car_id']           ?? 0);
+        $phone = trim($body['client_phone']       ?? '');
+        $date  = trim($body['appointment_date']   ?? '');
 
         if (!$carId || !$date) {
             ResponseHelper::error('car_id and appointment_date are required', 400);
@@ -39,10 +38,29 @@ class AppointmentController
         $car = (new CarModel())->findById($carId);
         if (!$car) ResponseHelper::error('Car not found', 404);
 
+        // Try to get identity from JWT; fall back to body fields for guests
+        $name  = '';
+        $email = '';
+        $header = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+        if (str_starts_with($header, 'Bearer ')) {
+            try {
+                $auth  = AuthMiddleware::require('client');
+                $name  = $auth['name']  ?? '';
+                $email = $auth['email'] ?? '';
+            } catch (\Throwable $e) { /* guest */ }
+        }
+
+        if (!$name)  $name  = trim($body['client_name']  ?? '');
+        if (!$email) $email = trim($body['client_email'] ?? '');
+
+        if (!$name || !$email) {
+            ResponseHelper::error('client_name and client_email are required for guest bookings', 400);
+        }
+
         $data = [
             ':car_id'           => $carId,
-            ':client_name'      => $auth['name']  ?? '',
-            ':client_email'     => $auth['email'] ?? '',
+            ':client_name'      => $name,
+            ':client_email'     => $email,
             ':client_phone'     => $phone,
             ':appointment_date' => $date,
         ];
@@ -50,11 +68,7 @@ class AppointmentController
         $id          = $this->appointments->create($data);
         $appointment = $this->appointments->findById($id);
 
-        MailHelper::sendAppointmentConfirmation(
-            $auth['email'] ?? '',
-            $auth['name']  ?? '',
-            $appointment
-        );
+        MailHelper::sendAppointmentConfirmation($email, $name, $appointment);
 
         ResponseHelper::json($appointment, 201);
     }
