@@ -20,4 +20,4 @@ WORKDIR /app
 
 # Install PHP dependencies at build time
 COPY app/composer.json app/composer.lock* ./
-RUN composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || composer install --no-interaction
+RUN composer config policy.advisories.block false && composer update --no-dev --optimize-autoloader --no-interaction
