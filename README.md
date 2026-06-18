@@ -1,60 +1,143 @@
-# PHP Web Development Boilerplate
+# Grand Transmission Auto — Web Development 2
 
-## About
+> **693428 · Fred & Farid · Inholland University · Web Development 2**
 
-This repo contains some starter code for new PHP projects.
+A full-stack vehicle dealership platform built for the Web Development 2 assignment.
+Clients can browse, purchase, or lease vehicles. Employees manage inventory and orders.
+Administrators manage users and roles.
 
-What's included:
+---
 
-- Docker setup including:
-  - PHP interpreter
-  - NGINX server
-  - MySQL (MariaDB) database
-  - PHP MyAdmin
-- A directory structure organized around the MVC pattern
-- A locally included routing utility: [https://github.com/steampixel/simplePHPRouter](https://github.com/steampixel/simplePHPRouter)
-- Bootstrap JS and CSS included in the header: [https://getbootstrap.com/](https://getbootstrap.com/)
+## Tech Stack
 
-## Usage
+| Layer | Technology |
+|---|---|
+| Frontend | Vue 3, Vite, Pinia, Vue Router 4, Tailwind CSS |
+| Backend | PHP 8, PSR-4 namespaces, firebase/php-jwt |
+| Database | MariaDB / MySQL |
+| Web Server | nginx |
+| Dev Tools | Docker Compose, phpMyAdmin, MailHog, Swagger UI |
 
-- Start local
+---
 
-In a terminal, from the cloned/forked/download project folder, run:
+## Getting Started
 
-```bash
-docker compose up
-```
+### Prerequisites
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 
-NGINX will now serve files in the app/public folder. Visit localhost in your browser to check.
-PHPMyAdmin is accessible on localhost:8080
-
-If you want to stop the containers, press Ctrl+C.
-
-Or run:
+### Run the project
 
 ```bash
-docker compose down
+git clone https://github.com/Fredd93/693428_Fred_Farid_Webdev2_Final_assignment_Auto_store.git
+cd 693428_Fred_Farid_Webdev2_Final_assignment_Auto_store
+docker-compose up --build
 ```
 
-## Important files and directories
+Import the database:
+```bash
+docker exec -i $(docker-compose ps -q mysql) \
+  mysql -udeveloper -psecret123 grand_transmission_auto \
+  < grand_transmission_auto_v2.sql
+```
 
-_The directory that contains all relevant back end code is in the `app/public` directory. Files and directories listed below are relative to that folder._
+### URLs
 
-- `index.php` - this it the starting point of the application. Any URL requested that is not a direct link (i.e. to a CSS file, image asset, etc.) is is handled by this file. This file handles setup and loading the application routes. This is the starting point for any request.
-- `/routes` - this directory contains files which create route handlers. A route handler handles a specific URL route, i.e. [http://localhost/users](http://localhost/users), [http://localhost/user/1](http://localhost/user/1), etc. Typically a route handler will call a controller method to perform business logic and get data from the data (Model) layer.
-- `/controllers` - controllers should contain the logic of your application. They are also responsible for getting data from the model layer, performing logic and preparing data to be presented to the view layer.
-- `models` - models handle database CRUD operations.
-  - `models/BaseModel.php` - contains a base class for other models. Currently, the base class handles retrieving the database credentials from global `$_ENV` variables and creating a new PDO instance.
-  - `models/UserModel.php` - example model with dummy data for retrieving all users and a single user. This class contains commented out code to demonstrate use of the base model's PDO instance.
-- `view` - views handle the display layer of the application. They should not contain logic or direct database/model access.
-  - `view/pages` - organizing your front end code is important. This directory is for page-level templates.
-  - `view/partials` - you should break up your front end to small, modular pieces so they can be organized and reused. These small, reusable pieces of front the front end should be saved here.
-- `assets` - the assets directory should contain all the static public assets including CSS and JS files, images and other media.
-- `lib` - the lib directory contains reused modules and utility files.
-  - `lib/env.php` - defines global environment variables accessible throughout the application.
-  - `lib/error_reporting.php` - contains a small bit of startup code to enable error messages in the local environment.
-  - `lib/Route.php` - includes a routing utility class.
+| Service | URL |
+|---|---|
+| Application | http://localhost |
+| phpMyAdmin | http://localhost:8080 |
+| MailHog | http://localhost:8025 |
+| Swagger API Docs | http://localhost:8090 |
 
-## Good patterns
+---
 
-For most layers of the application, it is a good idea to have a single file per entity type. I.e., currently there is a `routes/user.php` to handle user routes. If you add routes for products, adding it to `routes/product.php` would be a good idea. Similarly, there is a single file and class for the user controller and user model. New entities should generally get their own route, controller and model files.
+## Default Accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | admin@gta.com | admin123 |
+| Employee | employee@gta.com | employee123 |
+| Client | client@gta.com | client123 |
+
+---
+
+## Project Structure
+
+```
+├── app/                    PHP backend (PSR-4, GTA\ namespace)
+│   ├── public/index.php    Single entry point
+│   ├── src/
+│   │   ├── Controllers/    CarController, OrderController, UserController, AuthController
+│   │   ├── Models/         CarModel, OrderModel, UserModel, BaseModel
+│   │   ├── Middleware/     AuthMiddleware (JWT validation + role checks)
+│   │   └── Routes/         api.php, auth.php
+│   └── docs/openapi.yaml   OpenAPI 3.0 spec
+├── frontend/               Vue 3 SPA (Vite + Pinia + Vue Router + Tailwind)
+│   └── src/
+│       ├── views/          HomeView, CarsView, CarDetailView, LoginView, RegisterView,
+│       │                   DashboardView, AdminCarsView, AdminOrdersView, AdminUsersView
+│       ├── components/     Navbar, Footer, CarCard, Pagination, StatusBadge
+│       ├── stores/         auth.js (JWT + user), cars.js
+│       ├── router/         Vue Router with auth + role guards
+│       └── api/client.js   Axios with Bearer token interceptor
+├── docker-compose.yml
+├── nginx.conf
+└── grand_transmission_auto_v2.sql
+```
+
+---
+
+## User Roles
+
+| Role | Permissions |
+|---|---|
+| **Client** | Browse cars, place purchase/lease orders, view own orders, manage own profile |
+| **Employee** | All client permissions + add/edit cars, process all orders |
+| **Admin** | All employee permissions + delete cars, manage users, assign roles |
+
+---
+
+## API Reference
+
+Full interactive documentation available at **http://localhost:8090** (Swagger UI).
+
+All protected endpoints require:
+```
+Authorization: Bearer <token>
+```
+
+Token is obtained from `POST /api/auth/login`.
+
+---
+
+## Environment Variables
+
+Set in `docker-compose.yml` under the `php` service:
+
+| Variable | Description |
+|---|---|
+| `DB_HOST` | MySQL hostname (default: `mysql`) |
+| `DB_NAME` | Database name |
+| `DB_USER` | Database user |
+| `DB_PASSWORD` | Database password |
+| `APP_SECRET` | JWT signing secret — **change in production** |
+
+---
+
+## AI Disclosure Statement
+
+AI tools (Claude) were used during the development of this project to assist with:
+- Structuring the PHP PSR-4 namespace architecture
+- Writing boilerplate for JWT middleware and Axios interceptors
+- Generating the OpenAPI specification
+
+All generated code was reviewed, understood, and adapted by the student. The student is able to explain and demonstrate understanding of all code in this project. AI was not used to replace understanding — it was used as a development accelerator.
+
+---
+
+## References
+
+- [Vue.js Official Guide](https://vuejs.org/guide)
+- [RESTful API Best Practices](https://restfulapi.net)
+- [firebase/php-jwt](https://github.com/firebase/php-jwt)
+- [Pinia Documentation](https://pinia.vuejs.org)
