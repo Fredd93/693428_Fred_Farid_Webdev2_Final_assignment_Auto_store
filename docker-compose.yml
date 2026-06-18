@@ -6,6 +6,19 @@ services:
     volumes:
       - ./nginx.conf:/etc/nginx/nginx.conf
       - ./app:/app
+      - vue_dist:/usr/share/nginx/html
+    depends_on:
+      - php
+      - vue_build
+
+  vue_build:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: builder
+    command: sh -c "npm run build && cp -r /app/dist/* /dist/"
+    volumes:
+      - vue_dist:/dist
 
   php:
     build:
@@ -19,9 +32,10 @@ services:
       DB_USER: developer
       DB_PASSWORD: secret123
       DB_CHARSET: utf8mb4
+      APP_SECRET: gta_jwt_secret_change_in_prod
     depends_on:
       - mysql
-      - mailhog 
+      - mailhog
 
   mysql:
     image: mariadb:latest
@@ -42,11 +56,21 @@ services:
     environment:
       - PMA_HOST=mysql
 
-  mailhog: 
+  mailhog:
     image: mailhog/mailhog
     ports:
-      - "8025:8025" 
-      - "1025:1025"  
+      - "8025:8025"
+      - "1025:1025"
+
+  swagger:
+    image: swaggerapi/swagger-ui
+    ports:
+      - "8090:8080"
+    environment:
+      SWAGGER_JSON: /docs/openapi.yaml
+    volumes:
+      - ./app/docs:/docs
 
 volumes:
   mysqldata: {}
+  vue_dist: {}
