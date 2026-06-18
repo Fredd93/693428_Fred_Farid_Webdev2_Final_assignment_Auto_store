@@ -1,30 +1,18 @@
 <?php
+require_once __DIR__ . '/../vendor/autoload.php';
+require_once __DIR__ . '/../public/lib/Route.php';
+require_once __DIR__ . '/../public/lib/env.php';
 
-/**
- * Set env variables and enable error reporting in local environment
- */
-require_once(__DIR__ . "/lib/env.php"); // sets global env variables (database configuration)
-require_once(__DIR__ . "/lib/error_reporting.php"); // enables error reporting locally
+header('Access-Control-Allow-Origin: *');
+header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+header('Access-Control-Allow-Headers: Content-Type, Authorization');
 
-/**
- * Start user session
- */
-session_start();
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    http_response_code(204);
+    exit;
+}
 
-/**
- * Require routing library
- *  allows handling request for different URL routes, i.e. /users, /products, etc.
- */
-require_once(__DIR__ . "/lib/Route.php");
+require_once __DIR__ . '/../src/Routes/auth.php';
+require_once __DIR__ . '/../src/Routes/api.php';
 
-/**
- * Require routes
- *  Defines the routes that our application will ned
- */
-require_once(__DIR__ . "/routes/index.php");
-require_once(__DIR__ . "/routes/user.php");
-require_once(__DIR__ . "/routes/api.php");
-
-
-// Start the router, enabling handling requests
-Route::run();
+Route::run('/');
