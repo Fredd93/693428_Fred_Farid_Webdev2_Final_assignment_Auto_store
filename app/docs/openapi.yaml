@@ -1,0 +1,327 @@
+openapi: 3.0.3
+info:
+  title: Grand Transmission Auto API
+  version: 2.0.0
+  description: REST API for the Grand Transmission Auto vehicle dealership platform
+
+servers:
+  - url: http://localhost/api
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Car:
+      type: object
+      properties:
+        id:          { type: integer }
+        brand:       { type: string }
+        model:       { type: string }
+        year:        { type: integer }
+        transmission:{ type: string }
+        price:       { type: number }
+        on_sale:     { type: integer }
+        status:      { type: string }
+        image_path:  { type: string }
+
+    Order:
+      type: object
+      properties:
+        id:         { type: integer }
+        car_id:     { type: integer }
+        user_id:    { type: integer }
+        order_type: { type: string, enum: [purchase, lease] }
+        status:     { type: string, enum: [pending, approved, denied, completed] }
+
+    User:
+      type: object
+      properties:
+        id:    { type: integer }
+        name:  { type: string }
+        email: { type: string }
+        role:  { type: string, enum: [admin, employee, client] }
+
+    PaginatedCars:
+      type: object
+      properties:
+        data: { type: array, items: { $ref: '#/components/schemas/Car' } }
+        meta:
+          type: object
+          properties:
+            total: { type: integer }
+            page:  { type: integer }
+            limit: { type: integer }
+            pages: { type: integer }
+
+    Error:
+      type: object
+      properties:
+        error: { type: string }
+
+paths:
+  /auth/login:
+    post:
+      summary: Login
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email:    { type: string }
+                password: { type: string }
+      responses:
+        '200':
+          description: JWT token + user
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '401':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /auth/register:
+    post:
+      summary: Register new client
+      tags: [Auth]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password]
+              properties:
+                name:     { type: string }
+                email:    { type: string }
+                password: { type: string }
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user:  { $ref: '#/components/schemas/User' }
+        '409':
+          description: Email already registered
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Error' }
+
+  /cars:
+    get:
+      summary: List cars with filters and pagination
+      tags: [Cars]
+      parameters:
+        - { in: query, name: page,         schema: { type: integer, default: 1 } }
+        - { in: query, name: limit,        schema: { type: integer, default: 12 } }
+        - { in: query, name: brand,        schema: { type: string } }
+        - { in: query, name: year,         schema: { type: integer } }
+        - { in: query, name: transmission, schema: { type: string } }
+        - { in: query, name: min_price,    schema: { type: number } }
+        - { in: query, name: max_price,    schema: { type: number } }
+        - { in: query, name: on_sale,      schema: { type: integer, enum: [0,1] } }
+      responses:
+        '200':
+          description: Paginated car list
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PaginatedCars' }
+    post:
+      summary: Add a car (employee+)
+      tags: [Cars]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required: [brand, model, year, transmission, price, status]
+              properties:
+                brand:        { type: string }
+                model:        { type: string }
+                year:         { type: integer }
+                transmission: { type: string }
+                price:        { type: number }
+                status:       { type: string }
+                image_path:   { type: string, format: binary }
+      responses:
+        '201':
+          description: Created car
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Car' }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '403': { description: Forbidden,    content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /cars/filters:
+    get:
+      summary: Get filter options (brands, years, transmissions, price bounds)
+      tags: [Cars]
+      responses:
+        '200':
+          description: Filter options
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  brands:        { type: array, items: { type: string } }
+                  years:         { type: array, items: { type: integer } }
+                  transmissions: { type: array, items: { type: string } }
+                  price_bounds:  { type: object, properties: { min: { type: number }, max: { type: number } } }
+
+  /cars/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      summary: Get car by ID
+      tags: [Cars]
+      responses:
+        '200':
+          description: Car detail
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Car' }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    put:
+      summary: Update car (employee+)
+      tags: [Cars]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                brand: { type: string }
+                price: { type: number }
+      responses:
+        '200': { description: Updated car, content: { application/json: { schema: { $ref: '#/components/schemas/Car' } } } }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    delete:
+      summary: Delete car (admin only)
+      tags: [Cars]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /orders:
+    get:
+      summary: List orders (own for clients, all for employee+)
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - { in: query, name: page,  schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 15 } }
+      responses:
+        '200': { description: Paginated orders }
+        '401': { description: Unauthorized, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    post:
+      summary: Create order
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [car_id, order_type]
+              properties:
+                car_id:     { type: integer }
+                order_type: { type: string, enum: [purchase, lease] }
+                notes:      { type: string }
+      responses:
+        '201': { description: Created order, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+
+  /orders/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      summary: Get order by ID
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Order detail, content: { application/json: { schema: { $ref: '#/components/schemas/Order' } } } }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+        '404': { description: Not found, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    put:
+      summary: Update order status (employee+)
+      tags: [Orders]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status: { type: string, enum: [pending, approved, denied, completed] }
+      responses:
+        '200': { description: Updated order }
+
+  /users:
+    get:
+      summary: List users (admin only)
+      tags: [Users]
+      security: [{ BearerAuth: [] }]
+      parameters:
+        - { in: query, name: page,  schema: { type: integer, default: 1 } }
+        - { in: query, name: limit, schema: { type: integer, default: 15 } }
+      responses:
+        '200': { description: Paginated users }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+
+  /users/{id}:
+    parameters:
+      - { in: path, name: id, required: true, schema: { type: integer } }
+    get:
+      summary: Get user (own profile or admin)
+      tags: [Users]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: User, content: { application/json: { schema: { $ref: '#/components/schemas/User' } } } }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
+    put:
+      summary: Update user (own or admin; role change = admin only)
+      tags: [Users]
+      security: [{ BearerAuth: [] }]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:  { type: string }
+                email: { type: string }
+                role:  { type: string, enum: [admin, employee, client] }
+      responses:
+        '200': { description: Updated user }
+    delete:
+      summary: Delete user (admin only)
+      tags: [Users]
+      security: [{ BearerAuth: [] }]
+      responses:
+        '200': { description: Deleted }
+        '403': { description: Forbidden, content: { application/json: { schema: { $ref: '#/components/schemas/Error' } } } }
