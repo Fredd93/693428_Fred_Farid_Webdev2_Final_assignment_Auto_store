@@ -8,9 +8,10 @@
 <script setup>
 defineProps({ status: String })
 const colours = {
-  pending:   'bg-yellow-700 text-yellow-200',
-  approved:  'bg-green-700  text-green-200',
-  denied:    'bg-red-700    text-red-200',
-  completed: 'bg-blue-700   text-blue-200',
+  pending:        'bg-yellow-700  text-yellow-200',
+  approved:       'bg-green-700   text-green-200',
+  denied:         'bg-red-700     text-red-200',
+  completed:      'bg-blue-700    text-blue-200',
+  counter_offer:  'bg-orange-700  text-orange-200',
 }
 </script>

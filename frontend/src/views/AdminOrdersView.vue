@@ -63,6 +63,7 @@
               class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2">
               <option value="pending">Pending</option>
               <option value="approved">Approved</option>
+              <option value="counter_offer">Counter Offer</option>
               <option value="denied">Denied</option>
               <option value="completed">Completed</option>
             </select>
@@ -100,10 +101,10 @@
           <!-- Reason -->
           <div>
             <label class="text-gray-400 block mb-1">
-              {{ form.status === 'denied' ? 'Reason for denial *' : 'Note to client (optional)' }}
+              {{ form.status === 'denied' ? 'Reason for denial *' : form.status === 'counter_offer' ? 'Counter offer details *' : 'Note to client (optional)' }}
             </label>
             <textarea v-model="form.reason" rows="3"
-              :placeholder="form.status === 'denied' ? 'Explain why the request was denied...' : 'Any additional information for the client...'"
+              :placeholder="form.status === 'denied' ? 'Explain why the request was denied...' : form.status === 'counter_offer' ? 'Describe your counter offer, e.g. adjusted price, different term...' : 'Any additional information for the client...'"
               class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 focus:outline-none focus:border-red-500 resize-none"></textarea>
           </div>
 
@@ -165,8 +166,10 @@ function openReview(order) {
 }
 
 async function submitReview() {
-  if (form.value.status === 'denied' && !form.value.reason?.trim()) {
-    formErr.value = 'A reason is required when denying a request.'
+  if (['denied', 'counter_offer'].includes(form.value.status) && !form.value.reason?.trim()) {
+    formErr.value = form.value.status === 'denied'
+      ? 'A reason is required when denying a request.'
+      : 'Please include your counter offer details for the client.'
     return
   }
   saving.value  = true

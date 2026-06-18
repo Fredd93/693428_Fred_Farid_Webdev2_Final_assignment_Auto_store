@@ -57,7 +57,7 @@ CREATE TABLE orders (
   user_id     INT(11)  NOT NULL,
   car_id      INT(11)  NOT NULL,
   order_type  ENUM('purchase','lease') NOT NULL,
-  status      ENUM('pending','approved','denied','completed') DEFAULT 'pending',
+  status      ENUM('pending','approved','denied','completed','counter_offer') DEFAULT 'pending',
   notes        TEXT          DEFAULT NULL,
   reason       TEXT          DEFAULT NULL,
   final_price  DECIMAL(10,2) DEFAULT NULL,

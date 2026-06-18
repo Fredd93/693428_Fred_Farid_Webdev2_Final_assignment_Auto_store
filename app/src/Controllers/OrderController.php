@@ -101,7 +101,7 @@ class OrderController
 
         $body   = json_decode(file_get_contents('php://input'), true) ?? [];
         $status = $body['status'] ?? '';
-        $allowed = ['pending','approved','denied','completed'];
+        $allowed = ['pending','approved','denied','completed','counter_offer'];
         if (!in_array($status, $allowed)) ResponseHelper::error('Invalid status', 400);
 
         $reason      = isset($body['reason'])       ? trim($body['reason'])          : null;
