@@ -63,6 +63,10 @@
                 <option>available</option><option>sold</option><option>reserved</option>
               </select>
             </div>
+            <div>
+              <label class="text-gray-400 block mb-1">Discount (%)</label>
+              <input v-model="form.discount" type="number" min="0" max="100" step="0.01" class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
+            </div>
           </div>
           <div>
             <label class="text-gray-400 block mb-1">Description</label>
@@ -114,7 +118,7 @@ async function load(page = 1) {
 
 function openAdd() {
   editing.value   = null
-  form.value      = { brand:'', model:'', year:'', transmission:'', price:'', status:'available', description:'', on_sale:false, lease_available:false, imageFile:null }
+  form.value      = { brand:'', model:'', year:'', transmission:'', price:'', status:'available', description:'', on_sale:false, lease_available:false, discount:0, imageFile:null }
   showModal.value = true
 }
 
@@ -135,7 +139,7 @@ async function submitCar() {
   const fd = new FormData()
   Object.entries(form.value).forEach(([k, v]) => {
     if (k === 'imageFile') { if (v) fd.append('image_path', v) }
-    else fd.append(k, v === true ? 'yes' : v === false ? 'no' : v)
+    else fd.append(k, v === true ? 1 : v === false ? 0 : v)
   })
   try {
     if (editing.value) {

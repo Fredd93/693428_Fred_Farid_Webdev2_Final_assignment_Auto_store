@@ -42,10 +42,13 @@ class CarController
     {
         AuthMiddleware::require('employee');
 
-        $requiredFields = ['brand','model','year','transmission','price','on_sale','discount','status'];
+        $requiredFields = ['brand','model','year','transmission','price','status'];
         foreach ($requiredFields as $field) {
             if (empty($_POST[$field])) ResponseHelper::error("Missing field: $field", 400);
         }
+        // on_sale and discount are numeric — 0 is valid, so check isset not empty
+        if (!isset($_POST['on_sale']))  ResponseHelper::error('Missing field: on_sale', 400);
+        if (!isset($_POST['discount'])) ResponseHelper::error('Missing field: discount', 400);
 
         if (!isset($_FILES['image_path']) || $_FILES['image_path']['error'] !== UPLOAD_ERR_OK) {
             ResponseHelper::error('Image upload failed or missing', 400);
