@@ -15,5 +15,9 @@ RUN apt-get update && apt-get install -y \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Set working directory (optional)
+# Set working directory
 WORKDIR /app
+
+# Install PHP dependencies at build time
+COPY app/composer.json app/composer.lock* ./
+RUN composer install --no-dev --optimize-autoloader --no-interaction 2>/dev/null || composer install --no-interaction
