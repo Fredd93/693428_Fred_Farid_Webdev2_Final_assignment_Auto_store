@@ -1,5 +1,14 @@
 # Grand Transmission Auto — CLAUDE.md
 
+## Additional Documentation
+
+Design docs, architecture notes, and specs live in `docs/`. Add a new `@` import below whenever you drop a new file there.
+
+@docs/architecture.md
+@docs/rolls-royce.design.md
+
+---
+
 ## Project Overview
 
 Full-stack car dealership web app built as a Web Dev 2 final assignment. The project has two distinct frontends served by the same Nginx container:
