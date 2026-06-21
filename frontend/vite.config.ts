@@ -5,8 +5,9 @@ import tailwindcss from '@tailwindcss/vite'
 export default defineConfig({
   plugins: [vue(), tailwindcss()],
   server: {
+    host: 'grandtransmissionauto.local',
     proxy: {
-      '/api': 'http://localhost:80'
+      '/api': 'http://grandtransmissionauto.local:80'
     }
   }
 })

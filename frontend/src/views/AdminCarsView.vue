@@ -24,7 +24,7 @@
           <td class="px-4 py-3 capitalize">{{ car.status }}</td>
           <td class="px-4 py-3 flex gap-2">
             <button @click="openEdit(car)" class="text-blue-400 hover:text-blue-300">Edit</button>
-            <button @click="deleteCar(car.id)" class="text-red-400 hover:text-red-300">Delete</button>
+            <button v-if="auth.isAdmin" @click="deleteCar(car.id)" class="text-red-400 hover:text-red-300">Delete</button>
           </td>
         </tr>
       </tbody>
@@ -102,9 +102,11 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
 import Pagination from '../components/Pagination.vue'
-import client from '../api/client.js'
+import { createCar, deleteCarById, fetchCarsPage, updateCar } from '../api/cars.js'
 
+const auth      = useAuthStore()
 const cars      = ref([])
 const meta      = ref({})
 const loading   = ref(true)
@@ -115,10 +117,13 @@ const form      = ref({})
 
 async function load(page = 1) {
   loading.value = true
-  const { data } = await client.get('/cars', { params: { page, limit: 15 } })
-  cars.value    = data.data
-  meta.value    = data.meta
-  loading.value = false
+  try {
+    const response = await fetchCarsPage({ page, limit: 15 })
+    cars.value = response.data
+    meta.value = response.meta
+  } finally {
+    loading.value = false
+  }
 }
 
 function openAdd() {
@@ -135,7 +140,7 @@ function openEdit(car) {
 
 async function deleteCar(id) {
   if (!confirm('Delete this car?')) return
-  await client.delete(`/cars/${id}`)
+  await deleteCarById(id)
   await load()
 }
 
@@ -150,7 +155,7 @@ async function submitCar() {
       delete payload.imageFiles
       payload.on_sale         = payload.on_sale         ? 1 : 0
       payload.lease_available = payload.lease_available ? 1 : 0
-      await client.put(`/cars/${editing.value}`, payload)
+      await updateCar(editing.value, payload)
     } else {
       // New car or new images → use FormData
       const fd = new FormData()
@@ -162,9 +167,9 @@ async function submitCar() {
         }
       })
       if (editing.value) {
-        await client.put(`/cars/${editing.value}`, fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await updateCar(editing.value, fd, { hasFiles: true })
       } else {
-        await client.post('/cars', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+        await createCar(fd)
       }
     }
     showModal.value = false

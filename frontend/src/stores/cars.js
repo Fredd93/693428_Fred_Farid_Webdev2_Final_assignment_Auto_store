@@ -1,21 +1,20 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import client from '../api/client.js'
+import { fetchCarFilters, fetchCarsPage } from '../api/cars.js'
 
 export const useCarsStore = defineStore('cars', () => {
   const cars       = ref([])
   const meta       = ref({})
-  const filterOpts = ref({})
+  const filterOpts = ref({ brands: [], years: [], transmissions: [], price_bounds: { min_price: 0, max_price: 0 } })
 
   async function fetchCars(params = {}) {
-    const { data } = await client.get('/cars', { params })
-    cars.value = data.data
-    meta.value = data.meta
+    const response = await fetchCarsPage(params)
+    cars.value = response.data
+    meta.value = response.meta
   }
 
   async function fetchFilterOptions() {
-    const { data } = await client.get('/cars/filters')
-    filterOpts.value = data
+    filterOpts.value = await fetchCarFilters()
   }
 
   return { cars, meta, filterOpts, fetchCars, fetchFilterOptions }

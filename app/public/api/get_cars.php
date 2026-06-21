@@ -26,13 +26,15 @@ $cars       = $carModel->getFilteredCarsPaginated($filters, $page, $limit);
 $output = [];
 foreach ($cars as $car) {
     $output[] = [
-        'car_id'     => $car->getCarId(),
-        'brand'      => $car->getBrand(),
-        'model'      => $car->getModel(),
-        'price'      => $car->getPrice(),
-        'on_sale'    => $car->getOnSale(),
-        'discount'   => $car->getDiscount(),
-        'image_path' => $car->getImage(),
+        'car_id'       => $car->getCarId(),
+        'brand'        => $car->getBrand(),
+        'model'        => $car->getModel(),
+        'year'         => $car->getYear(),
+        'transmission' => $car->getTransmission(),
+        'price'        => $car->getPrice(),
+        'on_sale'      => $car->getOnSale(),
+        'discount'     => $car->getDiscount(),
+        'image_path'   => $car->getImage(),
     ];
 }
 

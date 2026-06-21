@@ -5,7 +5,7 @@ info:
   description: REST API for the Grand Transmission Auto vehicle dealership platform
 
 servers:
-  - url: http://localhost/api
+  - url: http://grandtransmissionauto.local/api
 
 components:
   securitySchemes:

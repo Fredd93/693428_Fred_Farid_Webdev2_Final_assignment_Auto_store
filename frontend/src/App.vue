@@ -1,9 +1,11 @@
 <template>
-  <Navbar />
-  <main class="min-h-screen bg-gray-950 text-white">
-    <RouterView />
-  </main>
-  <Footer />
+  <div class="site-shell">
+    <Navbar />
+    <main class="site-main">
+      <RouterView />
+    </main>
+    <Footer />
+  </div>
 </template>
 
 <script setup>

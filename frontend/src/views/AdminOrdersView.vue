@@ -2,7 +2,7 @@
   <div class="max-w-7xl mx-auto px-6 py-10">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-white">All Orders</h1>
-      <button @click="exportCsv"
+      <button v-if="auth.isAdmin" @click="exportCsv"
         class="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg text-sm font-medium">
         Export CSV
       </button>
@@ -128,10 +128,12 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useAuthStore } from '../stores/auth.js'
 import StatusBadge from '../components/StatusBadge.vue'
 import Pagination  from '../components/Pagination.vue'
 import client from '../api/client.js'
 
+const auth      = useAuthStore()
 const orders    = ref([])
 const meta      = ref({})
 const loading   = ref(true)

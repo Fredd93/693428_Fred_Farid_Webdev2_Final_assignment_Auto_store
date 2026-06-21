@@ -11,6 +11,7 @@ Route::add('/api/cars/filters',       fn() => (new CarController())->filters(), 
 Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->show((int)$id),    'GET');
 Route::add('/api/cars',               fn() => (new CarController())->store(),   'POST');
 Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->update((int)$id),  'PUT');
+Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->update((int)$id),  'POST');
 Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->destroy((int)$id), 'DELETE');
 
 // Orders

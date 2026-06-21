@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grand Transmission Auto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --blue:      #2563EB;
+    --blue-lt:   #EFF6FF;
+    --blue-md:   #DBEAFE;
+    --ink:       #0F172A;
+    --ink2:      #475569;
+    --ink3:      #94A3B8;
+    --canvas:    #F1F3F6;
+    --surface:   #FFFFFF;
+    --off:       #E8EBF0;
+    --border:    rgba(15,23,42,0.07);
+    --nav-bg:    rgba(241,243,246,0.88);
+    --hero-l-bg: #F1F3F6;
+    --hero-r-from: #EFF6FF;
+    --hero-r-to:   #93C5FD;
+    --glass-btn:  rgba(37,99,235,0.88);
+    --glass-btn-border: rgba(255,255,255,0.32);
+    --glass-btn-inner:  rgba(255,255,255,0.22);
+    --toggle-bg: rgba(0,0,0,0.06);
+    --toggle-border: rgba(0,0,0,0.08);
+  }
+
+  [data-theme="dark"] {
+    --blue-lt:   rgba(37,99,235,0.15);
+    --blue-md:   rgba(37,99,235,0.22);
+    --ink:       #F1F5F9;
+    --ink2:      #94A3B8;
+    --ink3:      #475569;
+    --canvas:    #080D1A;
+    --surface:   #0F1829;
+    --off:       #1A2440;
+    --border:    rgba(255,255,255,0.07);
+    --nav-bg:    rgba(8,13,26,0.88);
+    --hero-l-bg: #080D1A;
+    --hero-r-from: #0C1A3A;
+    --hero-r-to:   #0D2060;
+    --glass-btn:  rgba(37,99,235,0.72);
+    --glass-btn-border: rgba(255,255,255,0.2);
+    --glass-btn-inner:  rgba(255,255,255,0.12);
+    --toggle-bg: rgba(255,255,255,0.08);
+    --toggle-border: rgba(255,255,255,0.1);
+  }
+
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Outfit', sans-serif; background: var(--canvas); color: var(--ink); -webkit-font-smoothing: antialiased; transition: background .3s ease, color .3s ease; }
+
+  /* NAV */
+  .nav { position: fixed; top: 0; left: 0; right: 0; z-index: 100; padding: 0 3rem; height: 64px; display: flex; align-items: center; justify-content: space-between; background: var(--nav-bg); backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6); border-bottom: 1px solid var(--border); transition: background .3s ease; }
+  .nav-logo { font-size: 16px; font-weight: 800; color: var(--ink); letter-spacing: -0.02em; text-decoration: none; }
+  .nav-logo span { color: var(--blue); }
+  .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+  .nav-links a { font-size: 14px; font-weight: 500; color: var(--ink2); text-decoration: none; transition: color .2s; }
+  .nav-links a:hover, .nav-links a.active { color: var(--ink); }
+  .nav-right { display: flex; align-items: center; gap: 10px; }
+  .nav-login { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 500; color: var(--ink2); background: none; border: none; cursor: pointer; padding: 8px 12px; transition: color .2s; text-decoration: none; }
+  .nav-login:hover { color: var(--ink); }
+  .nav-cta { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; padding: 9px 22px; background: var(--glass-btn); color: #fff; border: 1px solid var(--glass-btn-border); border-radius: 8px; cursor: pointer; backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 6px 18px rgba(37,99,235,0.22); transition: box-shadow .2s, opacity .2s, transform .1s; text-decoration: none; display: inline-flex; align-items: center; }
+  .nav-cta:hover { opacity: 0.95; box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 10px 24px rgba(37,99,235,0.32); }
+  .nav-cta:active { transform: scale(0.98); }
+  .theme-toggle { width: 36px; height: 36px; border-radius: 50%; background: var(--toggle-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--toggle-border); cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--ink2); transition: background .2s, color .2s, transform .1s; flex-shrink: 0; }
+  .theme-toggle:hover { color: var(--ink); transform: scale(1.08); }
+  .theme-toggle .icon-sun { display: block; }
+  .theme-toggle .icon-moon { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-sun { display: none; }
+  [data-theme="dark"] .theme-toggle .icon-moon { display: block; }
+
+  /* HERO */
+  .hero { min-height: 100dvh; padding-top: 64px; background: var(--hero-l-bg); display: flex; flex-direction: column; transition: background .3s ease; }
+  .hero-grid { flex: 1; display: grid; grid-template-columns: 1fr 1.15fr; }
+  .hero-l { padding: 5rem 3rem; display: flex; flex-direction: column; justify-content: center; gap: 1.5rem; background: var(--hero-l-bg); transition: background .3s ease; }
+  .hero-eyebrow { font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--blue); }
+  .hero-h1 { font-size: clamp(2.6rem, 4vw, 3.8rem); font-weight: 900; line-height: 1.04; letter-spacing: -0.035em; color: var(--ink); }
+  .hero-h1 em { font-style: normal; color: var(--blue); }
+  .hero-desc { font-size: 1rem; color: var(--ink2); line-height: 1.75; max-width: 38ch; }
+  .hero-btns { display: flex; gap: 12px; align-items: center; margin-top: 0.25rem; }
+  .btn-blue { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 600; padding: 13px 28px; background: var(--glass-btn); color: #fff; border: 1px solid var(--glass-btn-border); border-radius: 8px; cursor: pointer; backdrop-filter: blur(16px) saturate(1.5); -webkit-backdrop-filter: blur(16px) saturate(1.5); box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 8px 24px rgba(37,99,235,0.26); transition: box-shadow .2s, transform .1s; }
+  .btn-blue:hover { box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 14px 32px rgba(37,99,235,0.36); }
+  .btn-blue:active { transform: scale(0.98); }
+  .btn-link { font-family: 'Outfit', sans-serif; font-size: 15px; font-weight: 500; padding: 12px 18px; background: var(--toggle-bg); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); border: 1px solid var(--toggle-border); border-radius: 8px; color: var(--ink2); cursor: pointer; display: flex; align-items: center; gap: 6px; transition: color .2s; }
+  .btn-link:hover { color: var(--ink); }
+  .hero-trust { display: flex; gap: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); margin-top: 0.5rem; }
+  .trust-item { display: flex; align-items: center; gap: 8px; }
+  .trust-icon { width: 32px; height: 32px; background: var(--blue-lt); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: var(--blue); flex-shrink: 0; }
+  .trust-text { font-size: 12px; }
+  .trust-text strong { display: block; font-size: 13px; font-weight: 700; color: var(--ink); }
+  .trust-text span { color: var(--ink3); }
+  .hero-r { background: linear-gradient(140deg, var(--hero-r-from) 0%, #BFDBFE 35%, #7DD3FC 65%, var(--hero-r-to) 100%); position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden; padding: 3rem; transition: background .3s ease; }
+  [data-theme="dark"] .hero-r { background: linear-gradient(140deg, #0C1A3A 0%, #0F2356 35%, #112760 65%, #0D2060 100%); }
+  .hero-r::before { content: ''; position: absolute; width: 600px; height: 600px; background: radial-gradient(ellipse, rgba(255,255,255,0.35) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%); pointer-events: none; }
+  [data-theme="dark"] .hero-r::before { background: radial-gradient(ellipse, rgba(37,99,235,0.15) 0%, transparent 70%); }
+  .hero-car-wrap { position: relative; width: 100%; max-width: 520px; z-index: 1; }
+  .hero-car-svg { width: 100%; filter: drop-shadow(0 20px 60px rgba(37,99,235,0.18)) drop-shadow(0 4px 16px rgba(0,0,0,0.1)); }
+  [data-theme="dark"] .hero-car-svg { filter: drop-shadow(0 20px 60px rgba(37,99,235,0.3)) drop-shadow(0 4px 16px rgba(0,0,0,0.4)); }
+  .glass-card { position: absolute; bottom: -1.5rem; right: 0; background: rgba(255,255,255,0.65); backdrop-filter: blur(20px) saturate(1.6); -webkit-backdrop-filter: blur(20px) saturate(1.6); border: 1px solid rgba(255,255,255,0.88); border-radius: 14px; padding: 1rem 1.25rem; display: flex; gap: 1.25rem; box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 8px 32px rgba(37,99,235,0.1); }
+  [data-theme="dark"] .glass-card { background: rgba(15,24,58,0.65); border: 1px solid rgba(255,255,255,0.14); box-shadow: inset 0 1px 0 rgba(255,255,255,0.08), 0 8px 32px rgba(0,0,0,0.4); }
+  .glass-spec { text-align: center; }
+  .glass-spec-icon { width: 28px; height: 28px; background: var(--blue-lt); border-radius: 6px; display: flex; align-items: center; justify-content: center; color: var(--blue); margin: 0 auto 5px; }
+  .glass-spec-val { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .glass-spec-lbl { font-size: 10px; color: var(--ink3); font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; }
+  .hero-car-label { position: absolute; top: -0.5rem; left: 0; }
+  .car-label-name { font-size: 13px; font-weight: 700; color: var(--ink); }
+  .car-label-tag { display: inline-flex; align-items: center; gap: 4px; background: #FEF9C3; color: #854D0E; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 100px; letter-spacing: 0.04em; margin-top: 4px; }
+  [data-theme="dark"] .car-label-tag { background: rgba(254,249,195,0.15); color: #FDE047; }
+  .hero-dots { display: flex; gap: 6px; margin-top: 1.75rem; z-index: 1; }
+  .dot { width: 6px; height: 6px; border-radius: 100px; background: rgba(37,99,235,0.25); transition: all .2s; }
+  .dot.on { width: 18px; background: var(--blue); }
+
+  /* SEARCH PANEL */
+  .search-panel { background: var(--surface); padding: 2rem 3rem; box-shadow: 0 4px 24px rgba(0,0,0,0.05), 0 1px 0 var(--border); position: relative; z-index: 10; transition: background .3s ease; }
+  .search-tabs { display: flex; gap: 0; margin-bottom: 1.25rem; }
+  .stab { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; padding: 6px 18px; background: none; border: 1px solid var(--border); border-right: none; color: var(--ink2); cursor: pointer; transition: background .15s, color .15s; }
+  .stab:first-child { border-radius: 8px 0 0 8px; }
+  .stab:last-child { border-right: 1px solid var(--border); border-radius: 0 8px 8px 0; }
+  .stab.on { background: var(--glass-btn); color: #fff; border-color: var(--blue); box-shadow: inset 0 1px 0 var(--glass-btn-inner); }
+  .search-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr auto; gap: 10px; align-items: center; }
+  .search-select-wrap { position: relative; }
+  .search-select-wrap::after { content: ''; position: absolute; right: 12px; top: 50%; transform: translateY(-50%); width: 0; height: 0; border-left: 4px solid transparent; border-right: 4px solid transparent; border-top: 5px solid var(--ink3); pointer-events: none; }
+  select { width: 100%; padding: 11px 36px 11px 14px; border: 1px solid var(--border); border-radius: 8px; font-family: 'Outfit', sans-serif; font-size: 14px; color: var(--ink); background: var(--canvas); appearance: none; -webkit-appearance: none; cursor: pointer; outline: none; transition: border-color .2s, background .3s, color .3s; }
+  select:focus { border-color: var(--blue); }
+  .btn-search { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; padding: 11px 32px; background: var(--glass-btn); color: #fff; border: 1px solid var(--glass-btn-border); border-radius: 8px; cursor: pointer; white-space: nowrap; backdrop-filter: blur(14px) saturate(1.4); -webkit-backdrop-filter: blur(14px) saturate(1.4); box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 6px 18px rgba(37,99,235,0.22); transition: box-shadow .2s, transform .1s; }
+  .btn-search:hover { box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 10px 24px rgba(37,99,235,0.32); }
+  .btn-search:active { transform: scale(0.98); }
+
+  /* BRANDS */
+  .brands-section { padding: 4rem 3rem; background: var(--canvas); transition: background .3s; }
+  .brands-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 2rem; }
+  .sec-eye { font-size: 11px; font-weight: 700; color: var(--blue); letter-spacing: 0.16em; text-transform: uppercase; margin-bottom: 0.35rem; }
+  .sec-h { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.025em; color: var(--ink); }
+  .sec-link { font-size: 13px; font-weight: 600; color: var(--blue); text-decoration: none; display: flex; align-items: center; gap: 4px; }
+  .brands-grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); transition: background .3s, border-color .3s; }
+  .brand-item { padding: 1.5rem 1rem; text-align: center; border-right: 1px solid var(--border); border-bottom: 1px solid var(--border); cursor: pointer; transition: background .15s; }
+  .brand-item:nth-child(6n) { border-right: none; }
+  .brand-item:hover { background: var(--canvas); }
+  .brand-item.sel { background: var(--blue-lt); }
+  .brand-icon { width: 40px; height: 40px; border-radius: 50%; background: var(--off); display: flex; align-items: center; justify-content: center; margin: 0 auto 8px; font-size: 11px; font-weight: 900; color: var(--ink2); letter-spacing: -0.02em; transition: background .15s; }
+  .brand-item.sel .brand-icon { background: var(--blue-md); color: var(--blue); }
+  .brand-name { font-size: 12px; font-weight: 600; color: var(--ink2); }
+  .brand-item.sel .brand-name { color: var(--blue); }
+  .brand-count { font-size: 11px; color: var(--ink3); margin-top: 2px; }
+
+  /* CARS GRID */
+  .cars-section { padding: 0 3rem 5rem; background: var(--canvas); transition: background .3s; }
+  .cars-header { display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 2rem; }
+  .car-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; min-height: 200px; }
+  .car-card { background: rgba(255,255,255,0.62); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5); border: 1px solid rgba(255,255,255,0.85); border-radius: 14px; overflow: hidden; box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 4px 24px rgba(15,23,42,0.06), 0 1px 4px rgba(15,23,42,0.04); transition: transform .22s cubic-bezier(.16,1,.3,1), box-shadow .22s cubic-bezier(.16,1,.3,1); cursor: pointer; }
+  .car-card:hover { transform: translateY(-6px); box-shadow: inset 0 1px 0 rgba(255,255,255,0.95), 0 20px 44px rgba(15,23,42,0.10), 0 4px 12px rgba(15,23,42,0.06); }
+  [data-theme="dark"] .car-card { background: rgba(15,25,58,0.52); border: 1px solid rgba(255,255,255,0.09); box-shadow: inset 0 1px 0 rgba(255,255,255,0.07), 0 4px 24px rgba(0,0,0,0.3); }
+  [data-theme="dark"] .car-card:hover { box-shadow: inset 0 1px 0 rgba(255,255,255,0.09), 0 20px 44px rgba(0,0,0,0.4); }
+  .car-card-img-wrap { position: relative; }
+  .car-card-img { width: 100%; aspect-ratio: 16/10; object-fit: cover; display: block; background: var(--off); }
+  .sale-ribbon { position: absolute; top: 12px; left: 12px; background: #FEF08A; color: #713F12; font-size: 10px; font-weight: 800; padding: 3px 10px; border-radius: 100px; letter-spacing: 0.04em; z-index: 1; }
+  [data-theme="dark"] .sale-ribbon { background: rgba(254,240,138,0.18); color: #FDE047; }
+  .car-card-body { padding: 1.25rem 1.5rem 1.5rem; }
+  .car-card-brand { font-size: 10px; font-weight: 700; color: var(--blue); letter-spacing: 0.14em; text-transform: uppercase; margin-bottom: 3px; }
+  .car-card-name { font-size: 1.1rem; font-weight: 700; color: var(--ink); letter-spacing: -0.02em; margin-bottom: 10px; }
+  .car-card-specs { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .spec-chip { font-size: 11px; font-weight: 500; color: var(--ink2); background: rgba(255,255,255,0.55); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 4px 10px; border-radius: 100px; border: 1px solid rgba(255,255,255,0.7); }
+  [data-theme="dark"] .spec-chip { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); }
+  .car-card-foot { display: flex; align-items: center; justify-content: space-between; padding-top: 1rem; border-top: 1px solid var(--border); }
+  .car-price { font-size: 1.2rem; font-weight: 800; color: var(--ink); }
+  .car-price-was { font-size: 12px; color: var(--ink3); text-decoration: line-through; margin-bottom: 1px; }
+  .btn-card-view { font-family: 'Outfit', sans-serif; font-size: 13px; font-weight: 600; padding: 8px 18px; background: var(--glass-btn); color: #fff; border: 1px solid var(--glass-btn-border); border-radius: 8px; cursor: pointer; backdrop-filter: blur(10px) saturate(1.3); -webkit-backdrop-filter: blur(10px) saturate(1.3); box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 4px 12px rgba(37,99,235,0.18); transition: box-shadow .2s, transform .1s; text-decoration: none; display: inline-block; }
+  .btn-card-view:hover { box-shadow: inset 0 1px 0 var(--glass-btn-inner), 0 8px 20px rgba(37,99,235,0.28); }
+  .btn-card-view:active { transform: scale(0.97); }
+
+  /* Skeleton */
+  .skeleton { background: linear-gradient(90deg, var(--off) 25%, rgba(148,163,184,0.15) 50%, var(--off) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 8px; }
+  @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+  .skeleton-card { background: rgba(255,255,255,0.62); border: 1px solid rgba(255,255,255,0.85); border-radius: 14px; overflow: hidden; }
+  [data-theme="dark"] .skeleton-card { background: rgba(15,25,58,0.52); border: 1px solid rgba(255,255,255,0.09); }
+  .skeleton-img { width: 100%; aspect-ratio: 16/10; }
+  .skeleton-body { padding: 1.25rem 1.5rem 1.5rem; }
+  .skeleton-line { height: 12px; margin-bottom: 10px; }
+  .skeleton-line.w60 { width: 60%; }
+  .skeleton-line.w40 { width: 40%; }
+
+  /* Empty */
+  .cars-empty { grid-column: 1/-1; text-align: center; padding: 4rem 2rem; color: var(--ink3); }
+  .cars-empty svg { margin-bottom: 1rem; opacity: 0.4; }
+  .cars-empty p { font-size: 15px; }
+
+  /* Pagination */
+  .pagination { display: flex; justify-content: center; gap: 8px; margin-top: 2.5rem; flex-wrap: wrap; }
+  .page-btn { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 600; width: 40px; height: 40px; border-radius: 8px; border: 1px solid var(--border); background: var(--surface); color: var(--ink2); cursor: pointer; transition: background .15s, color .15s, border-color .15s; display: flex; align-items: center; justify-content: center; }
+  .page-btn:hover { background: var(--blue-lt); color: var(--blue); border-color: var(--blue); }
+  .page-btn.on { background: var(--glass-btn); color: #fff; border-color: var(--blue); }
+  .page-btn:disabled { opacity: 0.4; cursor: default; }
+
+  /* CERTIFIED */
+  .certified { margin: 0 3rem 4rem; background: linear-gradient(120deg, #1E3A8A 0%, #1D4ED8 50%, #2563EB 100%); border-radius: 16px; padding: 3.5rem; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 2rem; }
+  .cert-h { font-size: 1.75rem; font-weight: 800; color: #fff; letter-spacing: -0.025em; margin-bottom: 0.5rem; }
+  .cert-s { font-size: 14px; color: rgba(255,255,255,0.65); line-height: 1.65; max-width: 48ch; }
+  .btn-white { font-family: 'Outfit', sans-serif; font-size: 14px; font-weight: 700; padding: 12px 28px; background: rgba(255,255,255,0.88); color: var(--blue); border: 1px solid rgba(255,255,255,0.6); border-radius: 8px; cursor: pointer; white-space: nowrap; backdrop-filter: blur(12px) saturate(1.4); -webkit-backdrop-filter: blur(12px) saturate(1.4); box-shadow: inset 0 1px 0 rgba(255,255,255,0.9), 0 6px 18px rgba(37,99,235,0.18); transition: box-shadow .2s, opacity .2s, transform .1s; }
+  .btn-white:hover { opacity: 0.95; }
+  .btn-white:active { transform: scale(0.98); }
+
+  /* FOOTER */
+  .footer { background: var(--ink); padding: 2rem 3rem; display: flex; align-items: center; justify-content: space-between; transition: background .3s; }
+  [data-theme="dark"] .footer { background: #030609; }
+  .footer-logo { font-size: 15px; font-weight: 800; color: #fff; letter-spacing: -0.02em; }
+  .footer-logo span { color: #60A5FA; }
+  .footer-links { display: flex; gap: 2rem; list-style: none; }
+  .footer-links a { font-size: 13px; color: rgba(255,255,255,0.4); text-decoration: none; }
+  .footer-links a:hover { color: rgba(255,255,255,0.75); }
+  .footer-copy { font-size: 12px; color: rgba(255,255,255,0.25); }
+
+  /* RESPONSIVE */
+  @media (max-width: 900px) {
+    .hero-grid { grid-template-columns: 1fr; }
+    .hero-r { min-height: 380px; }
+    .hero-l { padding: 3.5rem 1.5rem 2rem; }
+    .brands-grid { grid-template-columns: repeat(3, 1fr); }
+    .car-grid { grid-template-columns: 1fr 1fr; }
+    .search-row { grid-template-columns: 1fr 1fr; }
+    .btn-search { grid-column: span 2; }
+    .nav-links { display: none; }
+    .brands-section, .cars-section, .search-panel { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .certified { margin-left: 1.5rem; margin-right: 1.5rem; grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .car-grid { grid-template-columns: 1fr; }
+    .hero-h1 { font-size: 2.4rem; }
+    .brands-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a class="nav-logo" href="/">GTA<span>.</span>Auto</a>
+  <ul class="nav-links">
+    <li><a href="/" class="active">Home</a></li>
+    <li><a href="#stock">Stock</a></li>
+    <li><a href="/login">Login</a></li>
+  </ul>
+  <div class="nav-right">
+    <button class="theme-toggle" id="themeToggle" title="Toggle dark mode">
+      <svg class="icon-sun" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+      <svg class="icon-moon" width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    </button>
+    <a href="/login" class="nav-login">Login</a>
+    <a href="#stock" class="nav-cta">Browse All Cars</a>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-grid">
+    <div class="hero-l">
+      <p class="hero-eyebrow">Grand Transmission Auto</p>
+      <h1 class="hero-h1">Find your<br><em>perfect</em><br>drive.</h1>
+      <p class="hero-desc">From a reliable Corolla to a Porsche GT3 — every car on our lot is inspected, honestly priced, and ready today.</p>
+      <div class="hero-btns">
+        <button class="btn-blue" onclick="document.querySelector('#stock').scrollIntoView({behavior:'smooth'})">Browse stock</button>
+        <button class="btn-link" onclick="document.querySelector('#stock').scrollIntoView({behavior:'smooth'})">
+          Discover more
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        </button>
+      </div>
+      <div class="hero-trust">
+        <div class="trust-item">
+          <div class="trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+          <div class="trust-text"><strong>Certified</strong><span>All vehicles inspected</span></div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+          <div class="trust-text"><strong>Same day</strong><span>Test drives available</span></div>
+        </div>
+        <div class="trust-item">
+          <div class="trust-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 7H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM1 10h3M20 10h3"/></svg></div>
+          <div class="trust-text"><strong>Financing</strong><span>Flexible plans available</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-r">
+      <div class="hero-car-wrap">
+        <div class="hero-car-label">
+          <div class="car-label-name">BMW X3 xDrive30i · 2022</div>
+          <span class="car-label-tag">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Certified vehicle
+          </span>
+        </div>
+        <svg class="hero-car-svg" viewBox="0 0 560 280" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M60 195 L44 195 C32 195 22 185 22 173 L22 152 L80 72 L478 72 L536 152 L536 173 C536 185 526 195 514 195 L500 195" fill="rgba(255,255,255,0.9)" stroke="#CBD5E1" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M80 72 L140 26 L418 26 L478 72 Z" fill="rgba(255,255,255,0.9)" stroke="#CBD5E1" stroke-width="1.5" stroke-linejoin="round"/>
+          <path d="M152 30 L96 70 L240 70 L230 30 Z" fill="rgba(186,218,255,0.45)" stroke="#BFDBFE" stroke-width="1"/>
+          <path d="M326 30 L408 70 L320 70 L316 30 Z" fill="rgba(186,218,255,0.45)" stroke="#BFDBFE" stroke-width="1"/>
+          <path d="M238 30 L316 30 L320 70 L240 70 Z" fill="rgba(186,218,255,0.3)" stroke="#BFDBFE" stroke-width="1"/>
+          <line x1="240" y1="70" x2="240" y2="194" stroke="#CBD5E1" stroke-width="1"/>
+          <line x1="320" y1="70" x2="320" y2="194" stroke="#CBD5E1" stroke-width="1"/>
+          <circle cx="120" cy="198" r="46" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
+          <circle cx="120" cy="198" r="32" fill="white" stroke="#CBD5E1" stroke-width="1.5"/>
+          <circle cx="120" cy="198" r="16" fill="#E2E8F0"/>
+          <circle cx="440" cy="198" r="46" fill="#F1F5F9" stroke="#CBD5E1" stroke-width="2"/>
+          <circle cx="440" cy="198" r="32" fill="white" stroke="#CBD5E1" stroke-width="1.5"/>
+          <circle cx="440" cy="198" r="16" fill="#E2E8F0"/>
+          <ellipse cx="280" cy="246" rx="220" ry="10" fill="rgba(37,99,235,0.07)"/>
+          <path d="M500 152 L528 152 L530 168 L504 168 Z" fill="rgba(186,218,255,0.6)" stroke="#BFDBFE" stroke-width="1"/>
+          <path d="M50 152 L24 152 L22 168 L48 168 Z" fill="rgba(254,202,202,0.5)" stroke="#FECACA" stroke-width="1"/>
+        </svg>
+        <div class="glass-card">
+          <div class="glass-spec">
+            <div class="glass-spec-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l1.5 1.5M21 21l-1.5-1.5M12 2v2M12 20v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M2 12h2M20 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+            <div class="glass-spec-val">Petrol</div><div class="glass-spec-lbl">Fuel</div>
+          </div>
+          <div class="glass-spec">
+            <div class="glass-spec-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg></div>
+            <div class="glass-spec-val">18,400</div><div class="glass-spec-lbl">KM</div>
+          </div>
+          <div class="glass-spec">
+            <div class="glass-spec-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M4.22 4.22l2.83 2.83M16.95 16.95l2.83 2.83M1 12h4M19 12h4M4.22 19.78l2.83-2.83M16.95 7.05l2.83-2.83"/></svg></div>
+            <div class="glass-spec-val">Auto</div><div class="glass-spec-lbl">Gearbox</div>
+          </div>
+          <div class="glass-spec">
+            <div class="glass-spec-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+            <div class="glass-spec-val">2022</div><div class="glass-spec-lbl">Year</div>
+          </div>
+        </div>
+      </div>
+      <div class="hero-dots">
+        <div class="dot on"></div><div class="dot"></div><div class="dot"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SEARCH PANEL -->
+<div class="search-panel">
+  <div class="search-tabs">
+    <button class="stab on" data-sale="">All</button>
+    <button class="stab" data-sale="no">Not on Sale</button>
+    <button class="stab" data-sale="yes">On Sale</button>
+  </div>
+  <div class="search-row">
+    <div class="search-select-wrap">
+      <select id="filterBrand"><option value="">Any Make</option></select>
+    </div>
+    <div class="search-select-wrap">
+      <select id="filterYear"><option value="">Any Year</option></select>
+    </div>
+    <div class="search-select-wrap">
+      <select id="filterTransmission"><option value="">Any Transmission</option></select>
+    </div>
+    <div class="search-select-wrap">
+      <select id="filterPrice">
+        <option value="">Any Price</option>
+        <option value="0,15000">Under €15,000</option>
+        <option value="15000,30000">€15,000 – €30,000</option>
+        <option value="30000,60000">€30,000 – €60,000</option>
+        <option value="60000,999999">Over €60,000</option>
+      </select>
+    </div>
+    <button class="btn-search" id="searchBtn">Search</button>
+  </div>
+</div>
+
+<!-- BRANDS -->
+<section class="brands-section" id="stock">
+  <div class="brands-header">
+    <div>
+      <div class="sec-eye">Browse by brand</div>
+      <h2 class="sec-h" id="brandsTitle">Loading…</h2>
+    </div>
+    <a class="sec-link" href="#stock">All brands <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </div>
+  <div class="brands-grid" id="brandsGrid">
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+    <div class="brand-item"><div class="brand-icon skeleton" style="background:var(--off)"></div><div class="skeleton skeleton-line w60" style="margin:8px auto 4px"></div></div>
+  </div>
+</section>
+
+<!-- CARS GRID -->
+<section class="cars-section">
+  <div class="cars-header">
+    <div>
+      <div class="sec-eye">Current stock</div>
+      <h2 class="sec-h" id="carsTitle">Cars available now</h2>
+    </div>
+    <a class="sec-link" href="#stock">View all <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg></a>
+  </div>
+  <div class="car-grid" id="carGrid">
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>
+    <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>
+  </div>
+  <div class="pagination" id="pagination"></div>
+</section>
+
+<div class="certified">
+  <div>
+    <h2 class="cert-h">Every car. Certified.</h2>
+    <p class="cert-s">Each vehicle on our lot passes a 120-point inspection before it ever meets a customer. Honest history reports, no hidden fees — just a car you can trust.</p>
+  </div>
+  <button class="btn-white">Learn more</button>
+</div>
+
+<footer class="footer">
+  <div class="footer-logo">GTA<span>.</span>Auto</div>
+  <ul class="footer-links">
+    <li><a href="#stock">Stock</a></li>
+    <li><a href="/login">Login</a></li>
+    <li><a href="/register">Register</a></li>
+  </ul>
+  <div class="footer-copy">© 2026 Grand Transmission Auto</div>
+</footer>
+
+<script>
+  // THEME
+  const html = document.documentElement;
+  const saved = localStorage.getItem('gta-theme');
+  if (saved) html.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').addEventListener('click', () => {
+    const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+    html.setAttribute('data-theme', next);
+    localStorage.setItem('gta-theme', next);
+  });
+
+  // STATE
+  let currentPage = 1;
+  let currentSale = '';
+  let allBrands   = [];
+  let brandCounts = {};
+  const LIMIT = 6;
+
+  function imgSrc(path) {
+    if (!path) return '';
+    const clean = path.replace(/^(\.\.\/)+/, '').replace(/^\//, '');
+    return '/' + clean;
+  }
+
+  function fmtPrice(p) {
+    return '€' + Number(p).toLocaleString('nl-NL');
+  }
+
+  // TABS
+  document.querySelectorAll('.stab').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.stab').forEach(b => b.classList.remove('on'));
+      btn.classList.add('on');
+      currentSale = btn.dataset.sale;
+      currentPage = 1;
+      loadCars();
+    });
+  });
+
+  // SEARCH
+  document.getElementById('searchBtn').addEventListener('click', () => {
+    currentPage = 1;
+    loadCars();
+    document.querySelector('.cars-section').scrollIntoView({ behavior: 'smooth' });
+  });
+
+  // LOAD FILTERS
+  async function loadFilters() {
+    try {
+      const res  = await fetch('/api/cars/filters');
+      const data = await res.json();
+
+      const brandSel = document.getElementById('filterBrand');
+      (data.brands || []).forEach(b => {
+        const o = document.createElement('option');
+        o.value = b; o.textContent = b;
+        brandSel.appendChild(o);
+      });
+
+      const yearSel = document.getElementById('filterYear');
+      (data.years || []).forEach(y => {
+        const o = document.createElement('option');
+        o.value = y; o.textContent = y;
+        yearSel.appendChild(o);
+      });
+
+      const txSel = document.getElementById('filterTransmission');
+      (data.transmissions || []).forEach(t => {
+        const o = document.createElement('option');
+        o.value = t; o.textContent = t;
+        txSel.appendChild(o);
+      });
+
+      allBrands = data.brands || [];
+    } catch (e) {
+      console.error('Filters failed', e);
+    }
+  }
+
+  // LOAD CARS
+  async function loadCars() {
+    const grid  = document.getElementById('carGrid');
+    grid.innerHTML = `
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>
+      <div class="skeleton-card"><div class="skeleton skeleton-img"></div><div class="skeleton-body"><div class="skeleton skeleton-line w40"></div><div class="skeleton skeleton-line" style="height:18px;margin-bottom:12px"></div><div class="skeleton skeleton-line w60"></div></div></div>`;
+
+    const brand    = document.getElementById('filterBrand').value;
+    const year     = document.getElementById('filterYear').value;
+    const tx       = document.getElementById('filterTransmission').value;
+    const priceRaw = document.getElementById('filterPrice').value;
+    const [pMin, pMax] = priceRaw ? priceRaw.split(',') : ['', ''];
+
+    const params = new URLSearchParams({ page: currentPage, limit: LIMIT });
+    if (brand)       params.set('brand', brand);
+    if (year)        params.set('year', year);
+    if (tx)          params.set('transmission', tx);
+    if (currentSale) params.set('on_sale', currentSale);
+    if (pMin)        params.set('price_min', pMin);
+    if (pMax)        params.set('price_max', pMax);
+
+    try {
+      const res  = await fetch('/api/get_cars?' + params);
+      const data = await res.json();
+      const cars = data.cars || [];
+
+      document.getElementById('carsTitle').textContent =
+        `${data.total} car${data.total !== 1 ? 's' : ''} available`;
+
+      if (!cars.length) {
+        grid.innerHTML = `<div class="cars-empty"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/></svg><p>No cars match your search — try different filters.</p></div>`;
+        document.getElementById('pagination').innerHTML = '';
+        return;
+      }
+
+      grid.innerHTML = cars.map(car => {
+        const onSale  = car.on_sale === 'yes' || car.on_sale === 1 || car.on_sale === '1';
+        const disc    = onSale && car.discount ? Number(car.discount) : 0;
+        const salePrice = disc ? Math.round(car.price - (car.price * disc / 100)) : null;
+        const img     = imgSrc(car.image_path);
+
+        return `<div class="car-card">
+          <div class="car-card-img-wrap">
+            ${onSale && disc ? `<span class="sale-ribbon">${disc}% off</span>` : ''}
+            <img class="car-card-img" src="${img}" alt="${car.brand} ${car.model}" loading="lazy"
+              onerror="this.style.background='var(--off)';this.removeAttribute('src')">
+          </div>
+          <div class="car-card-body">
+            <div class="car-card-brand">${car.brand}</div>
+            <div class="car-card-name">${car.model}</div>
+            <div class="car-card-specs">
+              ${car.year         ? `<span class="spec-chip">${car.year}</span>` : ''}
+              ${car.transmission ? `<span class="spec-chip">${car.transmission}</span>` : ''}
+            </div>
+            <div class="car-card-foot">
+              <div>
+                ${salePrice
+                  ? `<div class="car-price-was">${fmtPrice(car.price)}</div><div class="car-price">${fmtPrice(salePrice)}</div>`
+                  : `<div class="car-price">${fmtPrice(car.price)}</div>`}
+              </div>
+              <a class="btn-card-view" href="/details?id=${car.car_id}">View</a>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+
+      renderPagination(data.page, data.totalPages);
+    } catch (e) {
+      console.error('Cars failed', e);
+      grid.innerHTML = `<div class="cars-empty"><p>Could not load cars. Please refresh.</p></div>`;
+    }
+  }
+
+  function renderPagination(page, total) {
+    const el = document.getElementById('pagination');
+    if (total <= 1) { el.innerHTML = ''; return; }
+    let h = `<button class="page-btn" ${page <= 1 ? 'disabled' : ''} onclick="goPage(${page-1})">&#8592;</button>`;
+    for (let i = 1; i <= total; i++) {
+      h += `<button class="page-btn${i === page ? ' on' : ''}" onclick="goPage(${i})">${i}</button>`;
+    }
+    h += `<button class="page-btn" ${page >= total ? 'disabled' : ''} onclick="goPage(${page+1})">&#8594;</button>`;
+    el.innerHTML = h;
+  }
+
+  function goPage(p) {
+    currentPage = p;
+    loadCars();
+    document.querySelector('.cars-section').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  // BRAND COUNTS (fetch all for counting)
+  async function loadBrandCounts() {
+    try {
+      const res  = await fetch('/api/cars');
+      const cars = await res.json();
+      brandCounts = {};
+      if (Array.isArray(cars)) {
+        cars.forEach(c => {
+          if (c.brand) brandCounts[c.brand] = (brandCounts[c.brand] || 0) + 1;
+        });
+      }
+    } catch (e) { /* show brands without counts */ }
+    renderBrands(null);
+  }
+
+  function renderBrands(selected) {
+    const grid = document.getElementById('brandsGrid');
+    if (!allBrands.length) return;
+    document.getElementById('brandsTitle').textContent =
+      `${allBrands.length} manufacturer${allBrands.length !== 1 ? 's' : ''} in stock`;
+
+    grid.innerHTML = allBrands.map(brand => {
+      const count   = brandCounts[brand] || 0;
+      const initials= brand.slice(0, 2).toUpperCase();
+      const isSel   = brand === selected;
+      return `<div class="brand-item${isSel ? ' sel' : ''}" onclick="filterByBrand('${brand.replace(/'/g,"\\'")}')">
+        <div class="brand-icon">${initials}</div>
+        <div class="brand-name">${brand}</div>
+        <div class="brand-count">${count} car${count !== 1 ? 's' : ''}</div>
+      </div>`;
+    }).join('');
+  }
+
+  function filterByBrand(brand) {
+    document.getElementById('filterBrand').value = brand;
+    renderBrands(brand);
+    currentPage = 1;
+    loadCars();
+    document.querySelector('.cars-section').scrollIntoView({ behavior: 'smooth' });
+  }
+
+  // INIT
+  (async () => {
+    await loadFilters();
+    await Promise.all([loadCars(), loadBrandCounts()]);
+  })();
+</script>
+</body>
+</html>

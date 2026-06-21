@@ -44,7 +44,7 @@ class MailHelper
                 <h2>Welcome, {$toName}!</h2>
                 <p>Your account has been created successfully at <strong>Grand Transmission Auto</strong>.</p>
                 <p>You can now browse our inventory and place purchase or lease requests.</p>
-                <p>Visit us at <a href='http://localhost'>grandtransmissionauto.com</a></p>
+                <p>Visit us at <a href='http://grandtransmissionauto.local/home'>grandtransmissionauto.local/home</a></p>
             ";
             $mail->send();
         } catch (Exception $e) {

@@ -1,14 +1,13 @@
 <template>
-  <RouterLink :to="`/cars/${car.id}`"
-    class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden hover:border-red-500 transition group">
-    <img :src="`/${car.thumbnail || car.image_path}`" :alt="`${car.brand} ${car.model}`"
-      class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-    <div class="p-4">
-      <h3 class="text-white font-semibold">{{ car.brand }} {{ car.model }}</h3>
-      <p class="text-gray-400 text-sm mt-1">{{ car.year }} · {{ car.transmission }}</p>
-      <div class="flex items-center justify-between mt-3">
-        <span class="text-red-400 font-bold text-lg">€{{ Number(car.price).toLocaleString() }}</span>
-        <span v-if="car.on_sale" class="bg-red-600 text-white text-xs px-2 py-0.5 rounded">SALE</span>
+  <RouterLink :to="`/cars/${car.id}`" class="public-card glass-panel group block transition duration-200 hover:-translate-y-1">
+    <img :src="car.thumbnail || car.image_path" :alt="`${car.brand} ${car.model}`" class="public-card-image transition-transform duration-300 group-hover:scale-[1.02]" />
+    <div class="p-5">
+      <div class="mb-1 text-[11px] font-bold uppercase tracking-[0.18em] text-blue-600">{{ car.brand }}</div>
+      <h3 class="text-xl font-bold tracking-tight text-slate-900">{{ car.model }}</h3>
+      <p class="mt-2 text-sm text-slate-600">{{ car.year }} · {{ car.transmission }}</p>
+      <div class="mt-5 flex items-center justify-between">
+        <span class="text-2xl font-extrabold tracking-tight text-slate-900">€{{ Number(car.price).toLocaleString() }}</span>
+        <span v-if="car.on_sale" class="public-badge px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em]">On sale</span>
       </div>
     </div>
   </RouterLink>
