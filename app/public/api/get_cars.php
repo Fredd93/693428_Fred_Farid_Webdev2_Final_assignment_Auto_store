@@ -3,40 +3,45 @@
 
 header('Content-Type: application/json');
 
-// Include the CarModel
 require_once __DIR__ . '/../models/CarModel.php';
 
 $carModel = new CarModel();
 
-// Read filter parameters from GET (or POST if you prefer)
 $filters = [
-    'brand' => $_GET['brand'] ?? null,
-    'year' => $_GET['year'] ?? null,
+    'brand'        => $_GET['brand'] ?? null,
+    'year'         => $_GET['year'] ?? null,
     'transmission' => $_GET['transmission'] ?? null,
-    'on_sale' => $_GET['on_sale'] ?? null,
-    'price_min' => $_GET['price_min'] ?? null,
-    'price_max' => $_GET['price_max'] ?? null
+    'on_sale'      => $_GET['on_sale'] ?? null,
+    'price_min'    => $_GET['price_min'] ?? null,
+    'price_max'    => $_GET['price_max'] ?? null,
 ];
 
-// Get filtered cars using your model method
-$cars = $carModel->getFilteredCars($filters);
+$page  = max(1, (int) ($_GET['page'] ?? 1));
+$limit = max(1, (int) ($_GET['limit'] ?? 12));
 
-// Convert CarDTO objects into an array for JSON output
+$total      = $carModel->getFilteredCarsCount($filters);
+$totalPages = $total > 0 ? (int) ceil($total / $limit) : 1;
+$cars       = $carModel->getFilteredCarsPaginated($filters, $page, $limit);
+
 $output = [];
 foreach ($cars as $car) {
     $output[] = [
-        'car_id'      => $car->getCarId(),
-        'brand'       => $car->getBrand(),
-        'model'       => $car->getModel(),
-        'price'       => $car->getPrice(),
-        'on_sale'     => $car->getOnSale(),
-        'discount'    => $car->getDiscount(),
-        'image_path'  => $car->getImage()
-        // Add additional fields if needed (e.g., year, transmission)
+        'car_id'     => $car->getCarId(),
+        'brand'      => $car->getBrand(),
+        'model'      => $car->getModel(),
+        'price'      => $car->getPrice(),
+        'on_sale'    => $car->getOnSale(),
+        'discount'   => $car->getDiscount(),
+        'image_path' => $car->getImage(),
     ];
 }
 
-// Output the JSON
-echo json_encode($output);
+echo json_encode([
+    'cars'       => $output,
+    'total'      => $total,
+    'page'       => $page,
+    'limit'      => $limit,
+    'totalPages' => $totalPages,
+]);
 exit;
 ?>
