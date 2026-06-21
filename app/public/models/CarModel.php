@@ -178,6 +178,97 @@ class CarModel extends BaseModel
         return $results;
     }
 
+    public function getFilteredCarsCount($filters)
+    {
+        $sql = "SELECT COUNT(*) FROM cars WHERE 1=1";
+        $params = [];
+
+        if (!empty($filters['brand'])) {
+            $sql .= " AND brand = :brand";
+            $params[':brand'] = $filters['brand'];
+        }
+        if (!empty($filters['year'])) {
+            $sql .= " AND year = :year";
+            $params[':year'] = $filters['year'];
+        }
+        if (!empty($filters['transmission'])) {
+            $sql .= " AND transmission = :transmission";
+            $params[':transmission'] = $filters['transmission'];
+        }
+        if (!empty($filters['on_sale'])) {
+            $sql .= " AND on_sale = :on_sale";
+            $params[':on_sale'] = $filters['on_sale'];
+        }
+        if (!empty($filters['price_min'])) {
+            $sql .= " AND price >= :price_min";
+            $params[':price_min'] = $filters['price_min'];
+        }
+        if (!empty($filters['price_max'])) {
+            $sql .= " AND price <= :price_max";
+            $params[':price_max'] = $filters['price_max'];
+        }
+
+        $stmt = self::$pdo->prepare($sql);
+        $stmt->execute($params);
+        return (int) $stmt->fetchColumn();
+    }
+
+    public function getFilteredCarsPaginated($filters, $page, $limit)
+    {
+        $sql = "SELECT * FROM cars WHERE 1=1";
+        $params = [];
+
+        if (!empty($filters['brand'])) {
+            $sql .= " AND brand = :brand";
+            $params[':brand'] = $filters['brand'];
+        }
+        if (!empty($filters['year'])) {
+            $sql .= " AND year = :year";
+            $params[':year'] = $filters['year'];
+        }
+        if (!empty($filters['transmission'])) {
+            $sql .= " AND transmission = :transmission";
+            $params[':transmission'] = $filters['transmission'];
+        }
+        if (!empty($filters['on_sale'])) {
+            $sql .= " AND on_sale = :on_sale";
+            $params[':on_sale'] = $filters['on_sale'];
+        }
+        if (!empty($filters['price_min'])) {
+            $sql .= " AND price >= :price_min";
+            $params[':price_min'] = $filters['price_min'];
+        }
+        if (!empty($filters['price_max'])) {
+            $sql .= " AND price <= :price_max";
+            $params[':price_max'] = $filters['price_max'];
+        }
+
+        $offset = ($page - 1) * $limit;
+        $sql .= " LIMIT :limit OFFSET :offset";
+
+        $stmt = self::$pdo->prepare($sql);
+        foreach ($params as $key => $value) {
+            $stmt->bindValue($key, $value);
+        }
+        $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+        $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
+        $stmt->execute();
+
+        $results = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $results[] = new CarDTO(
+                $row['car_id'],
+                $row['brand'],
+                $row['model'],
+                $row['price'],
+                $row['on_sale'],
+                $row['discount'],
+                $row['image_path']
+            );
+        }
+        return $results;
+    }
+
     public function insertCar($data)
     {
         $sql = "INSERT INTO cars (
