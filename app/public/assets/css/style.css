@@ -297,6 +297,20 @@ footer {
 }
 
 
+/* Pagination */
+.pagination-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 2rem 0;
+}
+
+.pagination-info {
+  font-size: 0.95rem;
+  color: var(--color-muted, #6c757d);
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .hero h1 {
