@@ -7,16 +7,21 @@ use GTA\Helpers\ResponseHelper;
 
 class UserController
 {
+    // Egyptian mobile numbers: 01 + operator prefix (0,1,2,5) + 8 digits, optional +20 country code.
+    private const EGYPT_PHONE_REGEX = '/^(?:\+20|0)1[0125][0-9]{8}$/';
+
     private UserModel $users;
 
     public function __construct() { $this->users = new UserModel(); }
 
     public function index(): void
     {
-        AuthMiddleware::require('admin');
+        $auth  = AuthMiddleware::require('employee');
         $page  = max(1, (int)($_GET['page']  ?? 1));
         $limit = min(50, max(1, (int)($_GET['limit'] ?? 15)));
-        ResponseHelper::json($this->users->listPaginated($page, $limit));
+        // Employees see client contact info only; admins see everyone (employees + clients).
+        $onlyRole = $auth['role'] === 'admin' ? null : 'client';
+        ResponseHelper::json($this->users->listPaginated($page, $limit, $onlyRole));
     }
 
     public function store(): void
@@ -64,6 +69,9 @@ class UserController
 
         if (isset($body['role']) && $auth['role'] !== 'admin') {
             ResponseHelper::error('Only admins can change roles', 403);
+        }
+        if (!empty($body['phone']) && !preg_match(self::EGYPT_PHONE_REGEX, $body['phone'])) {
+            ResponseHelper::error('Phone must be a valid Egyptian mobile number (e.g. 01012345678)', 422);
         }
 
         $this->users->update($id, $body);

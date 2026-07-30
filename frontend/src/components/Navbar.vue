@@ -12,7 +12,7 @@
           <RouterLink v-if="auth.isEmployee" to="/admin/cars" class="site-nav-link">Manage Cars</RouterLink>
           <RouterLink v-if="auth.isEmployee" to="/admin/orders" class="site-nav-link">Orders</RouterLink>
           <RouterLink v-if="auth.isEmployee" to="/admin/appointments" class="site-nav-link">Appointments</RouterLink>
-          <RouterLink v-if="auth.isAdmin" to="/admin/users" class="site-nav-link">Users</RouterLink>
+          <RouterLink v-if="auth.isEmployee" to="/admin/users" class="site-nav-link">Users</RouterLink>
           <RouterLink to="/dashboard" class="site-nav-link">Dashboard</RouterLink>
           <button @click="handleLogout" class="site-btn-secondary px-4 py-2 text-sm font-semibold">
             Logout

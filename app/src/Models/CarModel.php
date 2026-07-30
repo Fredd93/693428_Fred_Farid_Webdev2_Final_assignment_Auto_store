@@ -34,6 +34,10 @@ class CarModel extends BaseModel
             $where[] = 'on_sale = :on_sale';
             $params[':on_sale'] = $filters['on_sale'];
         }
+        if (isset($filters['lease_available'])) {
+            $where[] = 'lease_available = :lease_available';
+            $params[':lease_available'] = $filters['lease_available'];
+        }
 
         $sql = 'SELECT c.*, COALESCE(
                     (SELECT ci.image_path FROM car_images ci WHERE ci.car_id = c.id ORDER BY ci.sort_order LIMIT 1),

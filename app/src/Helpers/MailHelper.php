@@ -53,6 +53,25 @@ class MailHelper
         }
     }
 
+    public static function sendGuestVerificationCode(string $toEmail, string $code): void
+    {
+        try {
+            $mail = self::mailer();
+            $mail->addAddress($toEmail);
+            $mail->isHTML(true);
+            $mail->Subject = "Your verification code: {$code}";
+            $mail->Body    = "
+                <h2>Verify your email</h2>
+                <p>Use this code to confirm your purchase/lease request:</p>
+                <p style='font-size:28px;font-weight:700;letter-spacing:4px'>{$code}</p>
+                <p>This code expires in 10 minutes.</p>
+            ";
+            $mail->send();
+        } catch (Exception $e) {
+            error_log('MailHelper::sendGuestVerificationCode failed: ' . $e->getMessage());
+        }
+    }
+
     public static function sendOrderConfirmation(string $toEmail, string $toName, array $order): void
     {
         try {
@@ -84,11 +103,14 @@ class MailHelper
             $mail = self::mailer();
             $mail->addAddress($toEmail, $toName);
             $mail->isHTML(true);
-            $mail->Subject = "Test Drive Booked — {$appt['brand']} {$appt['model']}";
+            $isSellBack = ($appt['purpose'] ?? 'test_drive') === 'sell_back';
+            $title      = $isSellBack ? 'Sell-Back Appointment' : 'Viewing';
+            $titleLower = $isSellBack ? 'sell-back appointment' : 'viewing';
+            $mail->Subject = "{$title} Booked — {$appt['brand']} {$appt['model']}";
             $date = date('D, d M Y H:i', strtotime($appt['appointment_date']));
             $mail->Body    = "
-                <h2>Test Drive Confirmed</h2>
-                <p>Hi {$toName}, your test drive appointment has been received.</p>
+                <h2>{$title} Confirmed</h2>
+                <p>Hi {$toName}, your {$titleLower} appointment has been received.</p>
                 <table cellpadding='8' style='border-collapse:collapse'>
                     <tr><td><strong>Vehicle</strong></td><td>{$appt['brand']} {$appt['model']}</td></tr>
                     <tr><td><strong>Date &amp; Time</strong></td><td>{$date}</td></tr>
@@ -108,12 +130,13 @@ class MailHelper
             $mail = self::mailer();
             $mail->addAddress($toEmail, $toName);
             $mail->isHTML(true);
-            $status = ucfirst($appt['status']);
+            $status     = ucfirst($appt['status']);
+            $titleLower = ($appt['purpose'] ?? 'test_drive') === 'sell_back' ? 'sell-back appointment' : 'viewing';
             $date   = date('D, d M Y H:i', strtotime($appt['appointment_date']));
             $mail->Subject = "Appointment Update — {$status}";
             $mail->Body    = "
                 <h2>Appointment Status Update</h2>
-                <p>Hi {$toName}, your test drive appointment has been updated.</p>
+                <p>Hi {$toName}, your {$titleLower} appointment has been updated.</p>
                 <table cellpadding='8' style='border-collapse:collapse'>
                     <tr><td><strong>Vehicle</strong></td><td>{$appt['brand']} {$appt['model']}</td></tr>
                     <tr><td><strong>Date &amp; Time</strong></td><td>{$date}</td></tr>

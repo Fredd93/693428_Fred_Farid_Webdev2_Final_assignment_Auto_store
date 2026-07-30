@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 py-10">
+  <div class="max-w-7xl mx-auto px-6 py-10 bg-gray-950 rounded-2xl">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-white">Car Inventory</h1>
       <button @click="openAdd" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg">+ Add Car</button>
@@ -47,7 +47,7 @@
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Year</label>
-              <input v-model="form.year" type="number" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
+              <input v-model="form.year" type="number" min="1900" :max="new Date().getFullYear() + 1" step="1" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Transmission</label>
@@ -59,7 +59,7 @@
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Price (€)</label>
-              <input v-model="form.price" type="number" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
+              <input v-model="form.price" type="number" min="0.01" step="0.01" required class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Status</label>
@@ -69,7 +69,15 @@
             </div>
             <div>
               <label class="text-gray-400 block mb-1">Discount (%)</label>
-              <input v-model="form.discount" type="number" min="0" max="100" step="0.01" class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2" />
+              <input
+                v-model="form.discount"
+                type="number"
+                min="0"
+                max="100"
+                step="0.01"
+                :disabled="!form.on_sale"
+                class="w-full bg-gray-800 border border-gray-700 text-white rounded px-3 py-2 disabled:opacity-40 disabled:cursor-not-allowed"
+              />
             </div>
           </div>
           <div>
@@ -83,7 +91,7 @@
           </div>
           <div class="flex gap-3 mt-2">
             <label class="flex items-center gap-2 text-gray-300">
-              <input v-model="form.on_sale" type="checkbox" class="accent-red-500" /> On Sale
+              <input v-model="form.on_sale" type="checkbox" class="accent-red-500" @change="() => { if (!form.on_sale) form.discount = 0 }" /> On Sale
             </label>
             <label class="flex items-center gap-2 text-gray-300">
               <input v-model="form.lease_available" type="checkbox" class="accent-red-500" /> Lease Available

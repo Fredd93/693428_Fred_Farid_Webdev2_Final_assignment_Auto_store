@@ -82,7 +82,7 @@ document.addEventListener('DOMContentLoaded', function () {
       }
 
       cardDiv.innerHTML = `
-        <img src="/assets/images/${car.image_path}" class="card-img-top" alt="${car.brand} ${car.model}">
+        <img src="/${car.image_path}" class="card-img-top" alt="${car.brand} ${car.model}">
         <div class="card-body text-center">
           <h5 class="card-title">${car.brand} ${car.model}</h5>
           ${priceHTML}

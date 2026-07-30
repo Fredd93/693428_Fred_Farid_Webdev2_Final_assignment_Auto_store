@@ -11,7 +11,7 @@
     </div>
 
     <div class="glass-panel rounded-[26px] p-5">
-      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
+      <div class="grid gap-4 md:grid-cols-2 xl:grid-cols-6">
         <select v-model="filters.brand" @change="load(1)" class="inventory-select rounded-xl px-4 py-3 text-sm">
           <option value="">Any Make</option>
           <option v-for="b in filterOpts.brands" :key="b">{{ b }}</option>
@@ -32,6 +32,11 @@
         <label class="inventory-chip flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium">
           <input v-model="filters.on_sale" @change="load(1)" type="checkbox" class="accent-blue-600" />
           On Sale only
+        </label>
+
+        <label class="inventory-chip flex items-center justify-center gap-3 rounded-xl px-4 py-3 text-sm font-medium">
+          <input v-model="filters.lease_available" @change="load(1)" type="checkbox" class="accent-blue-600" />
+          Lease Available
         </label>
       </div>
     </div>
@@ -58,7 +63,7 @@ import { useCarsStore } from '../stores/cars.js'
 
 const carsStore = useCarsStore()
 const { cars, meta, filterOpts } = storeToRefs(carsStore)
-const filters = ref({ brand: '', year: '', transmission: '', max_price: '', on_sale: false })
+const filters = ref({ brand: '', year: '', transmission: '', max_price: '', on_sale: false, lease_available: false })
 const loading = ref(true)
 
 async function load(page = 1) {

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 py-10">
+  <div class="max-w-7xl mx-auto px-6 py-10 bg-gray-950 rounded-2xl">
     <div class="flex justify-between items-center mb-6">
       <h1 class="text-2xl font-bold text-white">All Orders</h1>
       <button v-if="auth.isAdmin" @click="exportCsv"
@@ -14,10 +14,12 @@
         <tr>
           <th class="px-4 py-3">#</th>
           <th class="px-4 py-3">Client</th>
+          <th class="px-4 py-3">Phone</th>
           <th class="px-4 py-3">Car</th>
           <th class="px-4 py-3">Type</th>
           <th class="px-4 py-3">Details</th>
           <th class="px-4 py-3">Status</th>
+          <th class="px-4 py-3">Sold By</th>
           <th class="px-4 py-3">Action</th>
         </tr>
       </thead>
@@ -25,6 +27,7 @@
         <tr v-for="o in orders" :key="o.id" class="border-b border-gray-800 hover:bg-gray-900">
           <td class="px-4 py-3">{{ o.id }}</td>
           <td class="px-4 py-3">{{ o.client_name }}</td>
+          <td class="px-4 py-3">{{ o.client_phone || '—' }}</td>
           <td class="px-4 py-3">{{ o.brand }} {{ o.model }}</td>
           <td class="px-4 py-3 capitalize">{{ o.order_type }}</td>
           <td class="px-4 py-3 text-xs text-gray-400">
@@ -35,6 +38,7 @@
             <span v-else>—</span>
           </td>
           <td class="px-4 py-3"><StatusBadge :status="o.status" /></td>
+          <td class="px-4 py-3">{{ o.sold_by_name || '—' }}</td>
           <td class="px-4 py-3">
             <button @click="openReview(o)"
               class="text-xs bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded">
@@ -65,8 +69,13 @@
               <option value="approved">Approved</option>
               <option value="counter_offer">Counter Offer</option>
               <option value="denied">Denied</option>
-              <option value="completed">Completed</option>
+              <option value="completed" :disabled="reviewing.order_type === 'lease' && reviewing.status !== 'approved'">
+                Completed
+              </option>
             </select>
+            <p v-if="reviewing.order_type === 'lease' && reviewing.status !== 'approved'" class="text-gray-500 text-xs mt-1">
+              This lease must be approved before it can be marked completed.
+            </p>
           </div>
 
           <!-- Final price (purchase approval) -->

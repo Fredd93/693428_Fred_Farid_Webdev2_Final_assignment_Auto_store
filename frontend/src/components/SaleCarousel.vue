@@ -22,9 +22,12 @@
         />
         <div class="absolute inset-0 bg-gradient-to-r from-slate-950/70 via-slate-950/20 to-transparent" />
 
-        <div class="absolute left-5 top-5">
+        <div class="absolute left-5 top-5 flex flex-col items-center gap-1">
           <span class="public-badge inline-flex px-3 py-1 text-[11px] font-extrabold uppercase tracking-[0.24em]">
             On Sale
+          </span>
+          <span v-if="car.discount" class="text-[11px] font-medium tracking-[0.12em] text-amber-200/80">
+            {{ Number(car.discount) }}% off
           </span>
         </div>
 

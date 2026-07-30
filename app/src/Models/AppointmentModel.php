@@ -36,10 +36,10 @@ class AppointmentModel extends BaseModel
     public function create(array $data): int
     {
         $stmt = $this->db->prepare(
-            'INSERT INTO appointments (car_id, client_name, client_email, client_phone, appointment_date)
-             VALUES (:car_id, :client_name, :client_email, :client_phone, :appointment_date)'
+            'INSERT INTO appointments (car_id, client_name, client_email, client_phone, appointment_date, purpose)
+             VALUES (:car_id, :client_name, :client_email, :client_phone, :appointment_date, :purpose)'
         );
-        $stmt->execute($data);
+        $stmt->execute(array_merge([':purpose' => 'test_drive'], $data));
         return (int) $this->db->lastInsertId();
     }
 

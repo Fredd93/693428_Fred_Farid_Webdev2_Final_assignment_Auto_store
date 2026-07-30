@@ -14,5 +14,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 require_once __DIR__ . '/../src/Routes/auth.php';
 require_once __DIR__ . '/../src/Routes/api.php';
+require_once __DIR__ . '/../src/Routes/guest.php';
 
 Route::run('/');

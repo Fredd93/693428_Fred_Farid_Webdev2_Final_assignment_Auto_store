@@ -4,9 +4,13 @@ namespace GTA\Controllers;
 use GTA\Models\CarModel;
 use GTA\Middleware\AuthMiddleware;
 use GTA\Helpers\ResponseHelper;
+use GTA\Helpers\ValidationHelper;
 
 class CarController
 {
+    private const ALLOWED_IMAGE_EXT = ['jpg', 'jpeg', 'png', 'webp', 'gif'];
+    private const MAX_IMAGE_BYTES   = 8 * 1024 * 1024;
+
     private CarModel $cars;
 
     public function __construct() { $this->cars = new CarModel(); }
@@ -22,6 +26,7 @@ class CarController
             'min_price'    => isset($_GET['min_price']) ? (float)$_GET['min_price'] : null,
             'max_price'    => isset($_GET['max_price']) ? (float)$_GET['max_price'] : null,
             'on_sale'      => isset($_GET['on_sale'])   ? (int)$_GET['on_sale']     : null,
+            'lease_available' => isset($_GET['lease_available']) ? (int)$_GET['lease_available'] : null,
         ], fn($v) => $v !== null);
 
         ResponseHelper::json($this->cars->listPaginated($filters, $page, $limit));
@@ -38,6 +43,30 @@ class CarController
         $car ? ResponseHelper::json($car) : ResponseHelper::error('Car not found', 404);
     }
 
+    private function validateUploadedFiles(array $filesInput): ?string
+    {
+        $names = (array) $filesInput['name'];
+        $tmps  = (array) $filesInput['tmp_name'];
+        $sizes = (array) $filesInput['size'];
+        $errs  = (array) $filesInput['error'];
+
+        foreach ($names as $i => $name) {
+            if ($errs[$i] !== UPLOAD_ERR_OK) continue;
+
+            $ext = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            if (!in_array($ext, self::ALLOWED_IMAGE_EXT, true)) {
+                return "\"$name\" has an unsupported file type. Allowed: " . implode(', ', self::ALLOWED_IMAGE_EXT);
+            }
+            if ($sizes[$i] > self::MAX_IMAGE_BYTES) {
+                return "\"$name\" exceeds the 8MB size limit";
+            }
+            if (@getimagesize($tmps[$i]) === false) {
+                return "\"$name\" is not a valid image";
+            }
+        }
+        return null;
+    }
+
     private function saveUploadedFiles(array $filesInput): array
     {
         $paths = [];
@@ -48,8 +77,9 @@ class CarController
 
         foreach ($names as $i => $name) {
             if ($errs[$i] !== UPLOAD_ERR_OK) continue;
-            $clean  = preg_replace('/[^a-zA-Z0-9\-_\.]/', '_', basename($name));
-            $unique = uniqid('car_', true) . '_' . $clean;
+            $ext    = strtolower(pathinfo($name, PATHINFO_EXTENSION));
+            $clean  = preg_replace('/[^a-zA-Z0-9\-_]/', '_', pathinfo($name, PATHINFO_FILENAME));
+            $unique = uniqid('car_', true) . '_' . $clean . '.' . $ext;
             if (move_uploaded_file($tmps[$i], $dir . $unique)) {
                 $paths[] = 'assets/images/' . $unique;
             }
@@ -68,7 +98,27 @@ class CarController
         if (!isset($_POST['on_sale']))  ResponseHelper::error('Missing field: on_sale', 400);
         if (!isset($_POST['discount'])) ResponseHelper::error('Missing field: discount', 400);
 
-        $fileInput  = $_FILES['images'] ?? null;
+        if (!ValidationHelper::isValidYear($_POST['year'])) {
+            ResponseHelper::error('Year must be a whole number between 1900 and ' . ((int)date('Y') + 1), 422);
+        }
+        if (!ValidationHelper::isPositiveNumber($_POST['price'])) {
+            ResponseHelper::error('Price must be a positive number', 422);
+        }
+        if (!in_array((string)$_POST['on_sale'], ['0', '1'], true)) {
+            ResponseHelper::error('on_sale must be 0 or 1', 422);
+        }
+        if (!ValidationHelper::isNonNegativeNumber($_POST['discount']) || (float)$_POST['discount'] > 100) {
+            ResponseHelper::error('Discount must be a number between 0 and 100', 422);
+        }
+        if (isset($_POST['lease_available']) && !in_array((string)$_POST['lease_available'], ['0', '1'], true)) {
+            ResponseHelper::error('lease_available must be 0 or 1', 422);
+        }
+
+        $fileInput = $_FILES['images'] ?? null;
+        if ($fileInput) {
+            $fileError = $this->validateUploadedFiles($fileInput);
+            if ($fileError) ResponseHelper::error($fileError, 422);
+        }
         $imagePaths = $fileInput ? $this->saveUploadedFiles($fileInput) : [];
         $thumbnail  = $imagePaths[0] ?? '';
 
@@ -110,6 +160,9 @@ class CarController
             ]));
 
             if (isset($_FILES['images'])) {
+                $fileError = $this->validateUploadedFiles($_FILES['images']);
+                if ($fileError) ResponseHelper::error($fileError, 422);
+
                 $newPaths = $this->saveUploadedFiles($_FILES['images']);
                 if ($newPaths) {
                     $this->cars->syncImages($id, $newPaths);
@@ -118,6 +171,22 @@ class CarController
             }
         } else {
             $data = json_decode(file_get_contents('php://input'), true) ?? [];
+        }
+
+        if (isset($data['year']) && !ValidationHelper::isValidYear($data['year'])) {
+            ResponseHelper::error('Year must be a whole number between 1900 and ' . ((int)date('Y') + 1), 422);
+        }
+        if (isset($data['price']) && !ValidationHelper::isPositiveNumber($data['price'])) {
+            ResponseHelper::error('Price must be a positive number', 422);
+        }
+        if (isset($data['discount']) && (!ValidationHelper::isNonNegativeNumber($data['discount']) || (float)$data['discount'] > 100)) {
+            ResponseHelper::error('Discount must be a number between 0 and 100', 422);
+        }
+        if (isset($data['on_sale']) && !in_array((string)$data['on_sale'], ['0', '1'], true)) {
+            ResponseHelper::error('on_sale must be 0 or 1', 422);
+        }
+        if (isset($data['lease_available']) && !in_array((string)$data['lease_available'], ['0', '1'], true)) {
+            ResponseHelper::error('lease_available must be 0 or 1', 422);
         }
 
         $this->cars->update($id, $data);

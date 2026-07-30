@@ -7,7 +7,10 @@
       <p class="mt-2 text-sm text-slate-600">{{ car.year }} · {{ car.transmission }}</p>
       <div class="mt-5 flex items-center justify-between">
         <span class="text-2xl font-extrabold tracking-tight text-slate-900">€{{ Number(car.price).toLocaleString() }}</span>
-        <span v-if="car.on_sale" class="public-badge px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em]">On sale</span>
+        <div v-if="car.on_sale" class="flex flex-col items-center gap-1">
+          <span class="public-badge px-3 py-1 text-[11px] font-bold uppercase tracking-[0.12em]">On sale</span>
+          <span v-if="car.discount" class="text-[11px] font-medium tracking-[0.12em] text-amber-600/80">{{ Number(car.discount) }}% off</span>
+        </div>
       </div>
     </div>
   </RouterLink>

@@ -12,7 +12,7 @@ class UserModel extends BaseModel
 
     public function findById(int $id): ?array
     {
-        $stmt = $this->db->prepare('SELECT id, name, email, role, created_at FROM users WHERE id = :id');
+        $stmt = $this->db->prepare('SELECT id, name, email, phone, address, role, created_at FROM users WHERE id = :id');
         $stmt->execute([':id' => $id]);
         return $stmt->fetch() ?: null;
     }
@@ -26,10 +26,18 @@ class UserModel extends BaseModel
         return (int) $this->db->lastInsertId();
     }
 
-    public function listPaginated(int $page, int $limit): array
+    public function listPaginated(int $page, int $limit, ?string $onlyRole = null): array
     {
+        if ($onlyRole !== null) {
+            return $this->paginate(
+                'SELECT id, name, email, phone, address, role, created_at FROM users WHERE role = :role ORDER BY created_at DESC',
+                [':role' => $onlyRole],
+                $page,
+                $limit
+            );
+        }
         return $this->paginate(
-            'SELECT id, name, email, role, created_at FROM users ORDER BY created_at DESC',
+            'SELECT id, name, email, phone, address, role, created_at FROM users ORDER BY created_at DESC',
             [],
             $page,
             $limit
@@ -38,7 +46,7 @@ class UserModel extends BaseModel
 
     public function update(int $id, array $data): bool
     {
-        $allowed = ['name', 'email', 'role'];
+        $allowed = ['name', 'email', 'phone', 'address', 'role'];
         $sets = [];
         $params = [':id' => $id];
         foreach ($allowed as $field) {

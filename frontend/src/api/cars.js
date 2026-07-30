@@ -96,6 +96,9 @@ export function buildCarsQuery(filters = {}) {
   if (filters.on_sale) {
     query.on_sale = 1
   }
+  if (filters.lease_available) {
+    query.lease_available = 1
+  }
 
   return query
 }

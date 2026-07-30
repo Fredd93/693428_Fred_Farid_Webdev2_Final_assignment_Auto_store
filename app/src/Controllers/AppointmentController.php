@@ -9,6 +9,9 @@ use GTA\Helpers\MailHelper;
 
 class AppointmentController
 {
+    // Egyptian mobile numbers: 01 + operator prefix (0,1,2,5) + 8 digits, optional +20 country code.
+    private const EGYPT_PHONE_REGEX = '/^(?:\+20|0)1[0125][0-9]{8}$/';
+
     private AppointmentModel $appointments;
 
     public function __construct() { $this->appointments = new AppointmentModel(); }
@@ -27,12 +30,16 @@ class AppointmentController
     {
         // Public endpoint — works for guests and logged-in users
         $body  = json_decode(file_get_contents('php://input'), true) ?? [];
-        $carId = (int)($body['car_id']           ?? 0);
-        $phone = trim($body['client_phone']       ?? '');
-        $date  = trim($body['appointment_date']   ?? '');
+        $carId   = (int)($body['car_id']         ?? 0);
+        $phone   = trim($body['client_phone']     ?? '');
+        $date    = trim($body['appointment_date'] ?? '');
+        $purpose = in_array($body['purpose'] ?? '', ['test_drive', 'sell_back'], true) ? $body['purpose'] : 'test_drive';
 
         if (!$carId || !$date) {
             ResponseHelper::error('car_id and appointment_date are required', 400);
+        }
+        if ($phone !== '' && !preg_match(self::EGYPT_PHONE_REGEX, $phone)) {
+            ResponseHelper::error('Phone must be a valid Egyptian mobile number (e.g. 01012345678)', 422);
         }
 
         $car = (new CarModel())->findById($carId);
@@ -63,6 +70,7 @@ class AppointmentController
             ':client_email'     => $email,
             ':client_phone'     => $phone,
             ':appointment_date' => $date,
+            ':purpose'          => $purpose,
         ];
 
         $id          = $this->appointments->create($data);

@@ -4,6 +4,8 @@ use GTA\Controllers\OrderController;
 use GTA\Controllers\UserController;
 use GTA\Controllers\AppointmentController;
 use GTA\Controllers\MotdController;
+use GTA\Controllers\LeaseInstallmentController;
+use GTA\Controllers\StatsController;
 
 // Cars
 Route::add('/api/cars',               fn() => (new CarController())->index(),   'GET');
@@ -16,10 +18,13 @@ Route::add('/api/cars/([0-9]+)',       fn($id) => (new CarController())->destroy
 
 // Orders
 Route::add('/api/orders/export',      fn() => (new OrderController())->export(), 'GET');
+Route::add('/api/orders/my-cars',     fn() => (new OrderController())->myCars(), 'GET');
 Route::add('/api/orders',             fn() => (new OrderController())->index(),  'GET');
 Route::add('/api/orders/([0-9]+)',     fn($id) => (new OrderController())->show((int)$id),   'GET');
 Route::add('/api/orders',             fn() => (new OrderController())->store(),  'POST');
 Route::add('/api/orders/([0-9]+)',     fn($id) => (new OrderController())->update((int)$id), 'PUT');
+Route::add('/api/orders/([0-9]+)/installments', fn($id) => (new LeaseInstallmentController())->index((int)$id), 'GET');
+Route::add('/api/installments/([0-9]+)/pay',    fn($id) => (new LeaseInstallmentController())->pay((int)$id),   'POST');
 
 // Appointments
 Route::add('/api/appointments',           fn() => (new AppointmentController())->index(),          'GET');
@@ -33,6 +38,11 @@ Route::add('/api/users',              fn() => (new UserController())->store(),  
 Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->show((int)$id),   'GET');
 Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->update((int)$id), 'PUT');
 Route::add('/api/users/([0-9]+)',      fn($id) => (new UserController())->destroy((int)$id),'DELETE');
+
+// Stats
+Route::add('/api/stats', fn() => (new StatsController())->index(), 'GET');
+Route::add('/api/stats/top-salesmen', fn() => (new StatsController())->topSalesmen(), 'GET');
+Route::add('/api/stats/top-cars',     fn() => (new StatsController())->topCars(),     'GET');
 
 // MOTD
 Route::add('/api/motd', fn() => (new MotdController())->show(),   'GET');

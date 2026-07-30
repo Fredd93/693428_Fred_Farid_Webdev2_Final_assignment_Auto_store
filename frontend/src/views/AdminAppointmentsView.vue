@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-7xl mx-auto px-6 py-10">
+  <div class="max-w-7xl mx-auto px-6 py-10 bg-gray-950 rounded-2xl">
     <h1 class="text-2xl font-bold text-white mb-6">Appointments</h1>
 
     <div v-if="loading" class="text-gray-400">Loading...</div>
